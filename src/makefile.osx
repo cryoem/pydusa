@@ -1,0 +1,32 @@
+LIB=mpich2
+
+#for the mpich2 library I could not get "it" to link correctly using the
+#python build command.  To get it to work I did the following:
+#make -f makefile.osx
+#setenv MACOSX_DEPLOYMENT_TARGET 10.3
+#manually reran the link command using copy/paste replacing cc with mpicc
+#did the copies as shown below
+
+
+default: mpi.so
+
+
+mpi.so: mympimodule.c
+	python setupmpimod.py.$(LIB) build
+	cp build/*lib*/*so .
+	cp build/*lib*/*so ../mpi_tests
+
+	
+clean:
+	rm -rf mpi.so
+	rm -rf ../mpi_tests/mpi.so
+	rm -rf build
+
+tar: clean
+	tar -cf mympimod.tar makefile* mympimodule.c setupmpimod*
+
+install:default
+	mkdir -p /Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/mpi
+	cp build/*lib*/*so /Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/mpi
+
+

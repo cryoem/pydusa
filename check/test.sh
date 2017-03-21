@@ -1,0 +1,33 @@
+#!/bin/sh
+
+startdir=/Users/hvoicu/ClionProjects/pydusa07/pydusa-1.15-sparx-8/
+/Users/hvoicu/SPARX3/installation/bin/mpirun -np 2 /Users/hvoicu/ClionProjects/pydusa07/pydusa-1.15-sparx-8/mpi_tests/p_ex00.py >& $startdir/check/myoutput
+
+dashes="-----------------------------------------------------------------------------"
+firstline=`head -n 1 $startdir/check/myoutput | cat`
+
+head -4 $startdir/check/correct_output | tail -n 3 > $startdir/check/correct_output1.temp
+tail -4 $startdir/check/correct_output | tail -n 3 > $startdir/check/correct_output2.temp
+
+head -4 $startdir/check/myoutput | tail -n 3 > $startdir/check/myoutput1.temp
+tail -4 $startdir/check/myoutput | tail -n 3 > $startdir/check/myoutput2.temp
+
+diff1=`diff --brief $startdir/check/myoutput1.temp $startdir/check/correct_output1.temp`
+diff2=`diff --brief $startdir/check/myoutput2.temp $startdir/check/correct_output2.temp`
+diff3=`diff --brief $startdir/check/myoutput1.temp $startdir/check/correct_output2.temp`
+diff4=`diff --brief $startdir/check/myoutput2.temp $startdir/check/correct_output1.temp`
+
+if (test -z "$diff1" && test -z "$diff2") || (test -z "$diff3" && test -z "$diff4"); then
+  echo MPI Python test PASSED
+else
+  echo MPI Python test FAILED
+  echo At this time MYMPI works with mpich, but it may not work with lam
+
+  tail -n 7 $startdir/check/myoutput | head -n 6 > $startdir/check/myoutputpe.temp
+
+  if test "$firstline" = "$dashes"; then
+    cat $startdir/check/myoutput
+  fi
+fi
+
+rm -f $startdir/check/myoutput $startdir/check/*.temp

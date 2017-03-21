@@ -1,0 +1,8 @@
+#!/bin/csh
+foreach arg ($*)
+echo " "
+echo "**** ex$arg ****"
+/Volumes/unix/mpi/lam/bin/mpiexec  -machinefile mlist -configfile  config$arg.lam *py
+echo "**** ex$arg  done ****"
+sleep 5
+end

@@ -1,0 +1,6 @@
+# Sample mpiexec config file
+-host localhost       p_ex04.py
+-host localhost -np 1 f_ex04
+-host localhost -np 1 p_ex04.py
+
+

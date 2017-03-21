@@ -1,0 +1,28 @@
+#for the IBM poe library I could not get "it" to link correctly using the
+#python build command.  To get it to work I did the following:
+#make -f makefile.poe
+#manually reran the link command using copy/paste replacing cc_r with mpcc_r
+#did the copies as shown below
+
+LIB=poe
+
+default: mpi.so
+
+
+mpi.so: mympimodule.c
+	echo "************* please read the make file for instructions *************"
+	echo "**********************************************************************"
+	python setupmpimod.py.$(LIB) build 
+#	cp build/*lib*/*so .
+#	cp build/*lib*/*so ../mpi_tests
+	echo "************* please read the make file for instructions *************"
+	echo "**********************************************************************"
+
+	
+clean:
+	rm -rf mpi.so
+	rm -rf ../mpi_tests/mpi.so
+	rm -rf build
+
+tar: clean
+	tar -cf mympimod.tar *

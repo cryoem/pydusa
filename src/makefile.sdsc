@@ -1,0 +1,33 @@
+MPI=/usr/local/apps/mpich/mpichgm-1.2.6..14b-intel8
+#PYTHON=/users/tkaiser/bin/python2.3.6/include/python2.3
+PYTHON=/usr/local/apps/python/Python2.4.1/include/python2.4
+
+CFLAGS = -DNDEBUG -O2 -g -D_GNU_SOURCE -fPIC -fPIC -I$(MPI)/include -I$(PYTHON)
+CC = icc
+G95 = icc
+SHARED_LIBRARY = mpi.so
+LDFLAGS = -shared 
+OBJS = mympimodule.o
+SRC = mympimodule.c
+LLIBS = -L$(MPI)/lib/shared   -lmpich -lfmpich -lpmpich 
+
+
+default: $(SHARED_LIBRARY)
+
+$(SHARED_LIBRARY): $(OBJS)
+	$(G95) $(LDFLAGS) $(OBJS) $(LLIBS) -o $(SHARED_LIBRARY)
+
+mympimodule.o: $(SRC)
+	$(CC)  $(CFLAGS) -c $? -o $@ 
+
+install: $(SHARED_LIBRARY)
+	cp $(SHARED_LIBRARY) ../mpi_tests
+
+	
+clean:
+	rm -rf $(OBJS)
+	rm -rf $(SHARED_LIBRARY)
+	rm -rf ../mpi_tests/$(SHARED_LIBRARY)
+
+tar: clean
+	tar -cf mympimod.tar makefile* mympimodule.c setupmpimod*

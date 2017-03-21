@@ -1,0 +1,8 @@
+after  1 ('/Users/jren/mympi/mpi_tests/p_ex00.py',)
+Hello from  0
+Numprocs is  2
+python is not about snakes
+after  1 ('/Users/jren/mympi/mpi_tests/p_ex00.py',)
+Hello from  1
+Numprocs is  2
+python is not about snakes

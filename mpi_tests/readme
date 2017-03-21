@@ -1,0 +1,107 @@
+
+
+
+	MPI Example Programs
+	
+
+
+
+
+ex00  This is a simple hello world program. Each node prints out 
+      it's rank and the size of the current MPI run (Total number of
+      nodes).
+
+ex01  This is a simple send/receive program in MPI
+
+ex02 Program shows how to use probe and get_count to find the size
+     of an incomming message
+
+ex03  This is a simple isend/ireceive program in MPI
+
+ex04  This is a simple broadcast program in MPI
+
+ex05 This program shows how to use MPI_Scatter and MPI_Gather
+     Each processor gets different data from the root processor
+     by way of mpi_scatter.  The data is summed and then sent back
+     to the root processor using MPI_Gather.  The root processor
+     then prints the global sum. 
+
+ex06 This program shows how to use MPI_Scatter and MPI_Reduce
+     Each processor gets different data from the root processor
+     by way of mpi_scatter.  The data is summed and then sent back
+     to the root processor using MPI_Reduce.  The root processor
+     then prints the global sum. 
+
+ex07 This program shows how to use MPI_Alltoall.  Each processor
+     send/rec a different  random number to/from other processors.  
+
+ex08 This program shows how to use MPI_Gatherv.  Each processor sends a
+     different amount of data to the root processor.  We use MPI_Gather
+     first to tell the root how much data is going to be sent.
+     do the mpi init stuff
+
+ex09 This program shows how to use MPI_Alltoallv.  Each processor 
+     send/rec a different and random amount of data to/from other
+     processors.  
+     We use MPI_Alltoall to tell how much data is going to be sent.
+
+ex10 This program is designed to show how to set up a new communicator. 
+     We set up a communicator that includes all but one of the processors,
+     The last processor is not part of the new communcator, TIMS_COMM_WORLD
+     We use the routine MPI_Group_rank to find the rank within the new
+     connunicator.  For the last processor the rank is MPI_UNDEFINED because
+     it is not part of the communicator.  For this processor we call get_input
+     The processors in TIMS_COMM_WORLD pass a token between themselves in the
+     subroutine pass_token.  The remaining processor gets input, i, from the terminal
+     and passes it to processor 1 of MPI_COMM_WORLD.  If i > 100 the program stops
+     global variables
+
+ex11 Shows how to use MPI_Type_vector to send noncontiguous blocks of data
+     and MPI_Get_count and MPI_Get_elements to see the number of elements sent
+     
+ex12 Shows how to split processors into two communicators
+
+
+Makefiles and run scripts are availabe for teragrid and OSX.  For the run scripts
+you will need to change the directories to what is required on your machine.
+
+
+MPI example programs
+
+  readme  (text version of this file)
+  f_ex00.f 
+  f_ex01.f 
+  f_ex02.f 
+  f_ex03.f 
+  f_ex04.f 
+  f_ex05.f 
+  f_ex06.f 
+  f_ex07.f 
+  f_ex08.f 
+  f_ex09.f 
+  f_ex10.f 
+  f_ex11.f 
+  f_ex12.f 
+  c_ex00.c 
+  c_ex01.c 
+  c_ex02.c 
+  c_ex03.c 
+  c_ex04.c 
+  c_ex05.c 
+  c_ex06.c 
+  c_ex07.c 
+  c_ex08.c 
+  c_ex09.c 
+  c_ex10.c 
+  c_ex11.c 
+  c_ex12.c 
+  makefile (teragrid - Intel)
+  run_c_tg (run C examples teragrid - Intel)
+  run_f_tg (run Fortran examples teragrid - Intel)
+  makefile.osx (OSX / LAM / xlf)
+  run_c_lam (run C examples OSX / LAM)
+  run_f_lam (run Fortran examples OSX / LAM)
+  examples.tar (everything listed here)
+
+
+

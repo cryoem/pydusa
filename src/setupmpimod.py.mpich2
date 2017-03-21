@@ -1,0 +1,13 @@
+from distutils.core import setup, Extension
+
+module1 = Extension('mpi',
+                    libraries = ['mpich','pmpich'],
+                    include_dirs = ['/Volumes/unix/usr/local/bin/mpi/32/mpich2-1.0.6p1/gccifort10.1.007/include','/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/include/numpy'],
+                    library_dirs = ['/Volumes/unix/usr/local/bin/mpi/32/mpich2-1.0.6p1/gccifort10.1.007/lib'],
+                    sources = ['mympimodule.c'],
+                    define_macros=[('NUMPY',None)])
+
+setup (name = 'PackageName',
+       version = '1.0',
+       description = 'This is a mpi package',
+       ext_modules = [module1])

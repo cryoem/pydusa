@@ -1,0 +1,96 @@
+	This describes a collection of makefiles for
+various machines on which the module has been
+used.  You will need to adjust library and
+compiler paths for your machines.  There is also
+a note about building using dynamic libraries.
+
+	The module needs the include file arrayobject.h
+from either Numeric or Numpy.  By default it looks in
+<Numeric/arrayobject.h>.  If you set the compile line
+option 
+
+-DNUMPY 
+
+then the file <arrayobject.h> is loaded.  
+
+makefile.ncsa_1.2.5
+makefile.ncsa_1.2.6
+
+	Makefiles for NCSA tg-login.ncsa.teragrid.org
+	Uses mpich-gm mpi from either 
+
+	/usr/local/mpich/mpich-gm-1.2.5..10-intel-r1
+
+	or
+
+	/usr/local/mpich/mpich-gm-1.2.6..14b-intel-r1
+
++++++++++++++++++++++++++++++++++++++++++++++
+makefile.poe
+
+	Makefile for IBM "SP" class machines  This
+	makefile uses one setupmpimod include
+	file setupmpimod.py.poe.
+	
+	Please read the makefile for special instructions.
+	It might not build correctly if you don't.
+
++++++++++++++++++++++++++++++++++++++++++++++
+makefile.osx
+
+	Makefile for peloton.sdsc.edu OSX 10.4.x.  This
+	makefile uses one of three setupmpimod include
+	files determined by a flag in the makefile. These
+	map to different version of MPI The versions
+	include MPICH, LAM, and OPENMPI.  See:
+		setupmpimod.py.lam
+		setupmpimod.py.mpich
+		setupmpimod.py.mpich2
+		setupmpimod.py.openmpi
+	
+	Please read the makefile for special instructions.
+	It might not build correctly if you don't.  Sourcing
+	the	file makeOsx10.4Py2.5 does the build for OSX 10.4
+	and Python 2.5 using NUMPY.
+
++++++++++++++++++++++++++++++++++++++++++++++
+makefile.sdsc
+
+	Makefile for tg-login.sdsc.teragrid.org using
+	mpich-gm 
+
++++++++++++++++++++++++++++++++++++++++++++++
+makefile.ethernet   
+
+	Makefile for tg-login.sdsc.teragrid.org using
+	ethernet 
+
++++++++++++++++++++++++++++++++++++++++++++++
+makefile.nbcr                                
+	Makefile for nbcr.net using ethernet 
+
+
++++++++++++++++++++++++++++++++++++++++++++++
+mympimodule.c
+	Source
+
+
+	Python loads libraries dynamically and thus
+will load the the MPI library only after the
+module is loaded. The main difficulty of building
+the module is having dynamic or shared object
+versions of the MPI library against which to link.
+
+	On Linux systems this means you need the versions
+of the libraries that have names that end in *.so 
+For example, if you are building the module using
+the MPICH version of MPI then you will need the
+file libmpich.so.  On some other systems, such as
+OSX, you will need versions of the library that
+end in *dylib.
+
+	For MPICH the shared objects are not built by
+default. You need to add the --enable-sharedlib
+flag to the configure command when MPICH is built.
+ If your don't have a clue what I am talking about
+see the person that installed MPI on your system

@@ -1,0 +1,209 @@
+
+workit.py
+
+	workit.py is a simple pipeline processing or "workflow" program. 
+workit.py is used when you need to perform a series of sequential
+operations on data sets.  It uses the mympi Python MPI module to
+spread work across multiple processors.  MPI is used for synchronization
+and convenience of launching multiple processors.
+
+
+
+	You might use workit.py to post process a collection of output files
+to produce images and archive the data.  Say you start with a data file,
+surface_11700.z and you want do the following operations:
+
+
+
+	* Extract floating point values from a the "raw" data file
+	* Create an image from the floating point values file
+	* Superimpose a mask on the image
+	* Archive the data to long term storage and delete the local copy
+
+
+
+	We have below an actual script that performs this workflow.  Note
+that the last line actually performs multiple operations.
+
+
+
+~/getsubimage < surface_11700.z > surface_11700.flt
+~/rgbpng.exe -p I -xmin 1110 -xmax 9984 -ymin 0 -ymax 2000 < surface_11700.flt surface_11700.png
+~/composite -dissolve 15 -tile output.png surface_11700.png surface_11700_g.png
+ls -lt surface_11700* ; hsi "put surface_11700*" ; rm -rf surface_11700*
+
+
+
+
+	If you have a collection of input files say surface_11700.z to
+surface_xxxx.z you can use workit.py to spread the work across multiple
+processors.  If you have four steps to your process then you would use 4
+processors.  You specify the commands to run in a file named "commands".
+ You specify the files to work on on the command line.  A typical mpirun
+command would be:
+
+
+
+mpirun -np 4 workit.py -s out*
+
+
+
+
+
+	The first mpi process would run the first command on the input file
+surface_11700.z.  Then the second mpi process would perform its
+operation on surface_11700.flt at the same time the first process is
+working on the second file, surface_11701.z, and so on.  The "-s" option
+is discussed below.
+
+
+
+The "commands" file corresponding to the script shown above would be:
+
+
+
+
+~/getsubimage < DUMMY.z > DUMMY.flt
+~/rgbpng.exe -p I -xmin 1110 -xmax 9984 -ymin 0 -ymax 2000 < DUMMY.flt DUMMY.png
+~/composite -dissolve 15 -tile output.png DUMMY.png DUMMY_g.png
+ls -lt DUMMY* ; hsi "put DUMMY*" ; rm -rf DUMMY*
+
+
+
+
+	workit.py replaces DUMMY with a file name.  The "-s" option on
+command line tells workit.py to strip off the suffix of the input file
+names, ".z" in this case.  Thus, in this case, DUMMY would be replaced
+with, surface_11700, surface_11701,..., surface_xxxxx.  If the "-s" is
+not used then DUMMY is replaced with surface_11700.z,
+surface_11701.z,..., surface_xxxxx.z.  This may be what you want to do
+is some cases.  Note that the sequential numbering is not significant. 
+You could specify all "C" files in a directory using the command:
+
+
+
+
+mpirun -np 4 workit.py -s *c.
+
+
+ 
+
+The "objects" listed on the command line don't even need to be files.
+
+
+
+	There are two types of output created by workit.py.  The first is to
+the stdout (the terminal).  This output lists the starting and ending
+times for the beginning and ending operation on each file.  Below we
+have a typical output from running the commands given above on the
+collection of files ("surface_11700.z" "surface_11750.z"
+"surface_11800.z" "surface_11850.z" "surface_11900.z" "surface_11950.z"
+)
+
+
+
+
+ [1]  started at   2005-11-09 20:32:30.455892  on  surface_11700
+ [2]  started at   2005-11-09 20:32:35.535864  on  surface_11750
+ [3]  started at   2005-11-09 20:32:57.853604  on  surface_11800
+ [4]  started at   2005-11-09 20:33:49.861226  on  surface_11850
+ [1]  completed at 2005-11-09 20:33:55.906248  on  surface_11700
+ [5]  started at   2005-11-09 20:34:41.883342  on  surface_11900
+ [2]  completed at 2005-11-09 20:34:47.814280  on  surface_11750
+ [6]  started at   2005-11-09 20:35:33.933969  on  surface_11950
+ [3]  completed at 2005-11-09 20:35:40.148798  on  surface_11800
+ [4]  completed at 2005-11-09 20:36:32.093352  on  surface_11850
+ [5]  completed at 2005-11-09 20:37:24.284804  on  surface_11900
+ [6]  completed at 2005-11-09 20:38:16.409299  on  surface_11950
+
+
+
+
+	We print the counter into the list of files on which we are
+operating as well as the "DUMMY" name.  Note that operations overlap in
+time.  We have started working on 4 files before completing the first
+series of operations on surface_11700.
+
+
+
+	workit.py also saves stdout and stderr for each command on each
+file.  This information is saved for each process in a file that has the
+process number used as the file name suffix.  For the above example we
+have files:
+
+
+
+
+tg-login1 e3druns/redo> ls -l output0*
+-rw-r--r--    1 tkaiser  use300        984 2005-11-09 20:35 output0000
+-rw-r--r--    1 tkaiser  use300       3216 2005-11-09 20:36 output0001
+-rw-r--r--    1 tkaiser  use300       1206 2005-11-09 20:38 output0002
+-rw-r--r--    1 tkaiser  use300       9858 2005-11-09 20:38 output0003
+tg-login1 e3druns/redo> 
+
+
+
+
+	Each file contains information for each time the command is run. 
+The information includes, the start time and end time, the command
+string, stdout, and stderr.  For example, the portion of output0000 for
+the first file is:
+
+
+
+
+tg-login1 e3druns/redo> cat output0001
+2005-11-09 20:32:35.535805
+2005-11-09 20:32:57.852294 COMMAND:
+~/rgbpng.exe -p I -xmin 1110 -xmax 9984 -ymin 0 -ymax 2000 < surface_11700.flt surface_11700.png
+
+STDOUT:
+grid size 11093 x 2500
+scale factor = 9.928e+02
+usepal= 1
+opened file surface_11700.png
+initWriteStructs: complete
+writeHeader: starting...
+writeHeader: setting header
+writeHeader: writing header
+writeHeader: finished.
+writeImage: starting...
+image is 2000 by 8874
+2000 8874 
+writeImage: finished.
+writeEnd: starting...
+writeEnd: finished
+finished.
+
+STDERR:
+
+
+
+
+Author:
+
+	
+		Timothy H. Kaiser, Ph.D.tkaiser@sdsc.eduSDSC/UCSD
+	
+
+
+Requirements:
+
+
+	
+		Module                          Author
+		mympi(mpi.so)                   Tim Kaiser
+		Python MPI implementation       http://peloton.sdsc.edu/~tkaiser/mympi/
+		version 1.1                         
+		
+	
+	
+		subProcess.py                   Pa'draig Brady
+		subprocess management module    http://www.pixelbeat.org/libs/subProcess.py
+		                                http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52296
+	
+
+
+
+
+
