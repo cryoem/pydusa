@@ -68,7 +68,7 @@ def install_fftw3_mpi():
 		return
 	chdir("fftw_mpi/fftw-3.3.5")
 	myexec("mkdir %s"%(pwd + "/fftw_mpi/installation"))
-	myexec("./configure --prefix=%s --enable-mpi --enable-shared"%(pwd + "/fftw_mpi/installation"))
+	myexec("./configure --prefix=%s --enable-mpi --enable-shared"%("${PREFIX}"))
 	# myexec("./configure --prefix=%s --enable-mpi --enable-shared"%(eman2))
 	myexec("make clean")
 	myexec("make")
