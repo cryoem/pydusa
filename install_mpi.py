@@ -235,7 +235,7 @@ if os.path.exists(eman2 + "/Python"):
 	myexec("./configure --with-python=" + eman2 + "/Python/bin/python --prefix=" + eman2)
 else:
 	# EMAN2 doesn't have Python - default one will be used
-	myexec("./configure --prefix=" + eman2)
+	myexec("./configure --prefix=" + eman2 + " --libdir=" + eman2)
 
 
 ##  need to update the Makefile in src to include the -I and -L for fftw-mpi compilation
