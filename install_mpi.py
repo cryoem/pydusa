@@ -70,9 +70,9 @@ def install_fftw3_mpi():
 	myexec("mkdir %s"%(pwd + "/fftw_mpi/installation"))
 	myexec("./configure --prefix=%s --enable-mpi --enable-shared"%(pwd + "/fftw_mpi/installation"))
 	# myexec("./configure --prefix=%s --enable-mpi --enable-shared"%(eman2))
-	myexec("make clean >> log")
-	myexec("make >> log")
-	myexec("make install >> log")
+	myexec("make clean")
+	myexec("make")
+	myexec("make install")
 
 	os.chdir(pwd)
 	return
@@ -100,9 +100,9 @@ def install_openmpi(version):
 		
 	chdir("openmpi-%s"%version)
 	myexec("./configure --enable-static --prefix=" + root + " --disable-dlopen")
-	myexec("make clean >> log")
-	myexec("make >> log")
-	myexec("make install >> log")
+	myexec("make clean")
+	myexec("make")
+	myexec("make install")
 	os.chdir(pwd)
 	return root
 
