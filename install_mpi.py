@@ -68,11 +68,11 @@ def install_fftw3_mpi():
 		return
 	chdir("fftw_mpi/fftw-3.3.5")
 	myexec("mkdir %s"%(pwd + "/fftw_mpi/installation"))
-	myexec("./configure --prefix=%s --enable-mpi --enable-shared"%(pwd + "/fftw_mpi/installation"))
+	myexec("./configure --prefix=%s --enable-mpi --enable-shared"%("${PREFIX}"))
 	# myexec("./configure --prefix=%s --enable-mpi --enable-shared"%(eman2))
-	myexec("make clean >> log")
-	myexec("make >> log")
-	myexec("make install >> log")
+	myexec("make clean")
+	myexec("make")
+	myexec("make install")
 
 	os.chdir(pwd)
 	return
@@ -100,9 +100,9 @@ def install_openmpi(version):
 		
 	chdir("openmpi-%s"%version)
 	myexec("./configure --enable-static --prefix=" + root + " --disable-dlopen")
-	myexec("make clean >> log")
-	myexec("make >> log")
-	myexec("make install >> log")
+	myexec("make clean")
+	myexec("make")
+	myexec("make install")
 	os.chdir(pwd)
 	return root
 
@@ -235,7 +235,7 @@ if os.path.exists(eman2 + "/Python"):
 	myexec("./configure --with-python=" + eman2 + "/Python/bin/python --prefix=" + eman2)
 else:
 	# EMAN2 doesn't have Python - default one will be used
-	myexec("./configure --prefix=" + eman2)
+	myexec("./configure --prefix=" + eman2 + " --libdir=" + eman2)
 
 
 ##  need to update the Makefile in src to include the -I and -L for fftw-mpi compilation
