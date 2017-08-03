@@ -2126,6 +2126,7 @@ ierr = MPI_Barrier(comm);
 		beltab[i] = kfv(rr, radius, alpha)/normk;
 	}
 	size_t niter = n_iter;
+	printf("\n  number of iterations   %d ", n_iter);
 	for (nit=0; nit<niter; ++nit) {
 //if( myid == 0 )  printf( "\n ITERATION  %d ",nit);
 
