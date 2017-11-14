@@ -1998,7 +1998,7 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 	float *tweight;
 	int nxt, nyt, nzt, maxr2, nnxo, myid, color, numprocs, ierr, ir;
 
-	if (!PyArg_ParseTuple(args, "lliiiiiiiil", &tvol, &tweight, &nxt, &nyt, &nzt, &maxr2, &nnxo, &myid, &color, &numprocs, &comm, &n_iter))
+	if (!PyArg_ParseTuple(args, "lliiiiiiiil", &tvol, &tweight, &nxt, &nyt, &nzt, &maxr2, &nnxo, &myid, &color, &numprocs, &comm))
 			return NULL;
 
  
@@ -2125,7 +2125,7 @@ ierr = MPI_Barrier(comm);
 		double rr = i/(double)(nbel-1)/2.0L;
 		beltab[i] = kfv(rr, radius, alpha)/normk;
 	}
-	size_t niter = n_iter;
+	size_t niter = 10;
 	for (nit=0; nit<niter; ++nit) {
 //if( myid == 0 )  printf( "\n ITERATION  %d ",nit);
 
