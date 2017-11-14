@@ -1998,7 +1998,7 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 	float *tweight;
 	int nxt, nyt, nzt, maxr2, nnxo, myid, color, numprocs, ierr, ir;
 
-	if (!PyArg_ParseTuple(args, "lliiiiiiiili", &tvol, &tweight, &nxt, &nyt, &nzt, &maxr2, &nnxo, &myid, &color, &numprocs, &comm, &n_iter))
+	if (!PyArg_ParseTuple(args, "lliiiiiiiil", &tvol, &tweight, &nxt, &nyt, &nzt, &maxr2, &nnxo, &myid, &color, &numprocs, &comm, &n_iter))
 			return NULL;
 
  
