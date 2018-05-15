@@ -28,10 +28,7 @@ THE SOFTWARE PROVIDED HEREIN IS ON AN AS IS BASIS, AND THE
 	OTHER RIGHTS.";
 */
 
-
-
 /************** numpy or Numeric? **************/
-
 
 /* if NUMPY is defined then we look for arrayobject.h
    in <arrayobject.h>.  If not then in <Numeric/arrayobject.h>
@@ -60,6 +57,7 @@ char REV_SRC[]="$Revision$";
 #define ARG_ARRAY
 /* #define ARG_STR */
 /* #define SIZE_RANK */
+
 #include <Python.h>
 #include "documentation.h"
 
@@ -84,6 +82,15 @@ char REV_SRC[]="$Revision$";
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+// Toshio Moriya 2018/04/25
+// Now let's use C way of error handling! (Toshio 2018/04/25)
+#include <errno.h>  // errno; 
+// Toshio Moriya 2018/04/25
+// We must programatically liking the fftw3 related libraries 
+// to solve the DLL hell of fftw functions between fftw3 and NumPy libraries...
+#include <dlfcn.h>  // Dl_info, dladdr, dlerror, dlopen, dlsym
+
 #ifndef PyMODINIT_FUNC
 #define PyMODINIT_FUNC void
 #endif
@@ -92,10 +99,11 @@ char REV_SRC[]="$Revision$";
 #define NULL_INIT
 #endif
 
-
-#include <string.h>
-#include <mpi.h>
-
+// NOTE: Toshio Moriya 2018/05/08
+// Trying to avoid the library conflicts of the same name functions (i.e. fftw_execute(), fftw_destroy_plan()),
+// including fftw3-mpi header before NumPy headers did not work.  
+// In stead, changing the order causes undefined errors of some symbols (e.g. ‘Dl_info’ undeclared ).
+// #include <mpi.h>  # This is included in "fftw3-mpi.h"
 #include "fftw3-mpi.h"
 
 /*
@@ -105,7 +113,15 @@ static MPI_Comm mycomm;
 */
 MPI_Errhandler newerr;
 
-
+// // Toshio Moriya 2018/04/25
+// // Create exception class for not implemented functions
+// // #include <new>          // std::bad_alloc
+// // #include <exception>    // std::logic_error
+// class MRKNotImplemented : public std::logic_error
+// {
+// 	public:
+// 		MRKNotImplemented() : std::logic_error("MRK_DEBUG: Function not yet implemented") { };
+// };
 
 #ifdef DEBUG
 static FILE *debug;
@@ -290,6 +306,7 @@ int *ranks,n;
 MPI_Group group,out_group;
 PyObject *ranks_obj;
 PyArrayObject *array;
+char error_message[1024];
 
 	if (!PyArg_ParseTuple(args, "liO", &in_group,&n,&ranks_obj))
         return NULL;
@@ -300,6 +317,10 @@ PyArrayObject *array;
 	if(array->dimensions[0] < n)
 		return NULL;
 	ranks=(int*)malloc((size_t) (n*sizeof(int)));
+	if (ranks == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mpi_group_incl(), malloc() failed to allocate %d bytes to pointer ranks.\n", n*sizeof(int));
+		perror(error_message);
+	}
 	memcpy((void*)ranks,(void *)(array->data),  (size_t) (n*sizeof(int)));
 	ierr=MPI_Group_incl ( (MPI_Group )group, n, ranks, &out_group);
 	free(ranks);
@@ -603,15 +624,19 @@ static PyObject *mpi_comm_spawn(PyObject *self, PyObject *args)
 #define CAST long
 #define VERT_FUNC PyInt_FromLong
 #endif
-int maxprocs,info,root,comm;
+// int maxprocs,info,root,comm;
+int maxprocs,root;
+COM_TYPE comm;
+MPI_Info info;
 MPI_Comm  outcomm;
 char *command;
 PyObject *input;
 int n,len,i;
 char **argv;
+char error_message[1024];
 
-
-if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&comm))
+// if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&comm))
+if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&comm))
 	return NULL;
 	argv=MPI_ARGV_NULL;
 	if((input == NULL )|| (input == Py_None )){
@@ -623,6 +648,11 @@ if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&com
 	if(strncmp("str",input->ob_type->tp_name,3)==0){
 		/* printf("is str\n"); */
 		argv=(char**)malloc((maxprocs+2)*sizeof(char*));
+		if (argv == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv.\n", (maxprocs+2)*sizeof(char*));
+			perror(error_message);
+		}
+		
 		for(i=0;i<maxprocs+2;i++) {
 			argv[i]=(char*)0;
 		}
@@ -631,6 +661,10 @@ if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&com
 			for(i=0;i<n;i++) {
 				len=strlen(PyString_AsString(input));
 				argv[i]=(char*)malloc(len+1);
+				if (argv[i] == NULL) {
+					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
+					perror(error_message);
+				}
 				argv[i][len]=(char)0;
 				strncpy(argv[i],PyString_AsString(input),(size_t)len);
 				/* printf("%s\n",argv[i]); */
@@ -641,6 +675,11 @@ if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&com
 	if(strncmp("list",input->ob_type->tp_name,4)==0){
 		printf("is list\n");
 		argv=(char**)malloc((maxprocs+2)*sizeof(char*));
+		if (argv == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv.\n", (maxprocs+2)*sizeof(char*));
+			perror(error_message);
+		}
+		
 		for(i=0;i<maxprocs+2;i++) {
 			argv[i]=(char*)0;
 		}
@@ -649,6 +688,10 @@ if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&com
 			for(i=0;i<n;i++) {
 				len=strlen(PyString_AsString(PyList_GetItem(input,i)));
 				argv[i]=(char*)malloc(len+1);
+				if (argv[i] == NULL) {
+					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
+					perror(error_message);
+				}
 				argv[i][len]=(char)0;
 				strncpy(argv[i],PyString_AsString(PyList_GetItem(input,i)),(size_t)len);
 				printf("%s\n",argv[i]);
@@ -658,16 +701,28 @@ if (!PyArg_ParseTuple(args, "sOiiii", &command,&input,&maxprocs,&info,&root,&com
 
 	if(array_of_errcodes)free(array_of_errcodes);
 	array_of_errcodes=(int*)malloc(maxprocs*sizeof(int));
+	if (array_of_errcodes == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer array_of_errcodes.\n", maxprocs*sizeof(int));
+		perror(error_message);
+	}
 	array_of_errcodes_size=maxprocs;
 
 /* int MPI_Comm_spawn(char *command, char *argv[], int maxprocs, MPI_Info info,
                   int root, MPI_Comm comm, MPI_Comm *intercomm,
                   int array_of_errcodes[])                    */
 /*	printf("launching %s from %d\n",command,root); */
+//	ierr=MPI_Comm_spawn(command,
+//	                    argv,
+//	                    maxprocs,
+//	                    (MPI_Info)info,
+//	                    root,
+//	                    (MPI_Comm)comm,
+//	                    &outcomm,
+//	                    array_of_errcodes);
 	ierr=MPI_Comm_spawn(command,
 	                    argv,
 	                    maxprocs,
-	                    (MPI_Info)info,
+	                    info,
 	                    root,
 	                    (MPI_Comm)comm,
 	                    &outcomm,
@@ -711,10 +766,13 @@ static PyObject *mpi_open_port(PyObject *self, PyObject *args)
 #define VERT_FUNC PyInt_FromLong
 #endif
 char  port_name[MPI_MAX_PORT_NAME];
-int info;
-	if (!PyArg_ParseTuple(args, "i", &info))
-        return NULL;
-	ierr=MPI_Open_port((MPI_Info)info,port_name);
+// int info;
+MPI_Info info;
+	// if (!PyArg_ParseTuple(args, "i", &info))
+	if (!PyArg_ParseTuple(args, "l", &info))
+		return NULL;
+	// ierr=MPI_Open_port((MPI_Info)info,port_name);
+	ierr=MPI_Open_port(info,port_name);
 	return PyString_FromString(port_name);
 }
 
@@ -747,10 +805,14 @@ static PyObject *mpi_comm_accept(PyObject *self, PyObject *args)
 #endif
 COM_TYPE  comm,newcomm;
 char* port_name;
-int info,root;
-	if (!PyArg_ParseTuple(args, "siii", &port_name,&info,&root,&comm))
-	  return NULL;
-	ierr=MPI_Comm_accept(port_name,  (MPI_Info)info, root,  (MPI_Comm)comm,  (MPI_Comm*)&newcomm);
+// int info,root;
+MPI_Info info;
+int root;
+	// if (!PyArg_ParseTuple(args, "siii", &port_name,&info,&root,&comm))
+	if (!PyArg_ParseTuple(args, "slii", &port_name,&info,&root,&comm))
+		return NULL;
+	// ierr=MPI_Comm_accept(port_name,  (MPI_Info)info, root,  (MPI_Comm)comm,  (MPI_Comm*)&newcomm);
+	ierr=MPI_Comm_accept(port_name, info, root, (MPI_Comm)comm, (MPI_Comm*)&newcomm);
 	return VERT_FUNC((CAST)newcomm);
 }
 static PyObject *mpi_comm_connect(PyObject *self, PyObject *args)
@@ -765,10 +827,14 @@ static PyObject *mpi_comm_connect(PyObject *self, PyObject *args)
 #endif
 COM_TYPE  comm,newcomm;
 char* port_name;
-int info,root;
-	if (!PyArg_ParseTuple(args, "siii", &port_name,&info,&root,&comm))
-        return NULL;
-	ierr=MPI_Comm_connect(port_name,  (MPI_Info)info, root,  (MPI_Comm)comm,  (MPI_Comm*)&newcomm);
+// int info,root;
+MPI_Info info;
+int root;
+	// if (!PyArg_ParseTuple(args, "siii", &port_name,&info,&root,&comm))
+	if (!PyArg_ParseTuple(args, "slii", &port_name,&info,&root,&comm))
+		return NULL;
+	// ierr=MPI_Comm_connect(port_name,  (MPI_Info)info, root,  (MPI_Comm)comm,  (MPI_Comm*)&newcomm);
+	ierr=MPI_Comm_connect(port_name, info, root, (MPI_Comm)comm, (MPI_Comm*)&newcomm);
 	return VERT_FUNC((CAST)newcomm);
 }
 static PyObject *mpi_comm_disconnect(PyObject *self, PyObject *args)
@@ -891,16 +957,26 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 #endif
 	int len;
 	argv=NULL;
-        erroron=0;
+	erroron=0;
+	char error_message[1024];
+	
 	ierr=MPI_Initialized(&did_it);
 	if(!did_it){
 		if (!PyArg_ParseTuple(args, "iO", &argc, &input))
 			return NULL;
 		argv=(char**)malloc((argc+2)*sizeof(char*));
+		if (argv == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer argv.\n", (argc+2)*sizeof(char*));
+			perror(error_message);
+		}
 		n=PyList_Size(input);
 		for(i=0;i<n;i++) {
 			len=strlen(PyString_AsString(PyList_GetItem(input,i)));
 			argv[i]=(char*)malloc(len+1);
+			if (argv[i] == NULL) {
+				sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
+				perror(error_message);
+			}
 			argv[i][len]=(char)0;
 			strncpy(argv[i],PyString_AsString(PyList_GetItem(input,i)),(size_t)len);
 			/* printf("%s ",argv[i]); */
@@ -931,17 +1007,25 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 #ifdef ARG_STR
 		arglen=0;
 		strides=(int*)malloc(argc*sizeof(int));
+		if (strides == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer strides.\n", argc*sizeof(int));
+			perror(error_message);
+		}
 		strides[0]=0;
 		for(i=0;i<argc;i++) {
 			arglen=arglen+strlen(argv[i])+1;
 			strides[i+1]=strides[i]+strlen(argv[i])+1;
 		}
 		argstr=(char*)malloc(arglen*sizeof(char));
+		if (argstr == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer argstr.\n", arglen*sizeof(char));
+			perror(error_message);
+		}
 		for(i=0;i<argc;i++) {
-		    for(n=0;n<strlen(argv[i]);n++) {
-		        argstr[strides[i]+n]=argv[i][n];
-		    }
-		    argstr[strides[i]+strlen(argv[i])]=(char)32;
+			for(n=0;n<strlen(argv[i]);n++) {
+				argstr[strides[i]+n]=argv[i][n];
+			}
+			argstr[strides[i]+strlen(argv[i])]=(char)32;
 /*
 			free(argv[i]);
 */
@@ -985,17 +1069,28 @@ static PyObject * mpi_start(PyObject *self, PyObject *args) {
 	int numprocs,myid;
 	char *command,*aptr;
 	char **argv;
-        erroron=0;
+	char error_message[1024];
+	
+	erroron=0;
+	
 	if (!PyArg_ParseTuple(args, "is", &argc, &command))
-        return NULL;
+		return NULL;
 	ierr=MPI_Initialized(&did_it);
-    if(!did_it){
+	if(!did_it){
 		/* MPI_Init(0,0); */ /* lam mpi will start with this line
 		                        mpich requires us to build a real
 		                        command line */
 		/* MPI_Init(0,0); */
 		argv=(char**)malloc((argc+2)*sizeof(char*));
+		if (argv == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_start(), malloc() failed to allocate %d bytes to pointer argv.\n", (argc+2)*sizeof(char*));
+			perror(error_message);
+		}
 		argv[0]=(char*)malloc(128);
+		if (argv[0] == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_start(), malloc() failed to allocate %d bytes to pointer argv[0].\n", 128);
+			perror(error_message);
+		}
 		sprintf(argv[0],"dummy");
 		strtok(command, " ");
 		for(i=0;i<argc-1;i++) {
@@ -1092,6 +1187,7 @@ char *sptr,*rptr;
 
 int numprocs,myid;
 int dimensions[1];
+char error_message[1024];
 
 	sendcnts=0;
 	displs=0;
@@ -1115,12 +1211,20 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		sendcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (sendcnts == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_scatterv(), malloc() failed to allocate %d bytes to pointer sendcnts.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)sendcnts, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, PyArray_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		displs=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (displs == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_scatterv(), malloc() failed to allocate %d bytes to pointer displs.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)displs, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendbuf_obj, getptype(sendtype), 1, 3);
@@ -1168,6 +1272,7 @@ int sendcnt,*displs,*recvcnts,rtot,i;
 char *sptr,*rptr;
 int numprocs,myid;
 int dimensions[1];
+char error_message[1024];
 
 	displs=0;
 
@@ -1192,6 +1297,10 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		recvcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (recvcnts == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_gatherv(), malloc() failed to allocate %d bytes to pointer recvcnts.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)recvcnts, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		rtot=0;
 		for(i=0;i<numprocs;i++)
@@ -1202,6 +1311,10 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		displs=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (displs == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_gatherv(), malloc() failed to allocate %d bytes to pointer displs.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)displs, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
 	}
@@ -1479,7 +1592,7 @@ int dimensions[1];
 #ifdef DEBUG
     int myid;
 #endif
-
+char error_message[1024];
 
 	rdispls=0;
 
@@ -1498,6 +1611,10 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		recvcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (recvcnts == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_alltoallv(), malloc() failed to allocate %d bytes to pointer recvcnts.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)recvcnts, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		rtot=0;
 		for(i=0;i<numprocs;i++)
@@ -1509,6 +1626,10 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		rdispls=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (rdispls == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_alltoallv(), malloc() failed to allocate %d bytes to pointer rdispls.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)rdispls, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
 
@@ -1524,6 +1645,10 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		sendcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (sendcnts == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_alltoallv(), malloc() failed to allocate %d bytes to pointer sendcnts.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)sendcnts, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
 
@@ -1532,6 +1657,10 @@ int dimensions[1];
 		if (array == NULL)
 			return NULL;
 		sdispls=(int*)malloc((size_t) (sizeof(int)*numprocs));
+		if (sdispls == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mpi_alltoallv(), malloc() failed to allocate %d bytes to pointer sdispls.\n", sizeof(int)*numprocs);
+			perror(error_message);
+		}
 		memcpy((void *)sdispls, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
 
@@ -1618,7 +1747,8 @@ static PyObject * mpi_win_allocate_shared(PyObject *self, PyObject *args) {
 	MPI_Win_allocate_shared(local_window_count * disp_unit, disp_unit, MPI_INFO_NULL, comm_sm, &base_ptr, &win_sm);
 
 */
-	PyArrayObject *result;
+	//NUMPY 1.13 change PyArrayObject *result;
+	PyObject *result;
 	MPI_Aint size;
 	int disp_unit;
 	MPI_Info info;
@@ -1656,7 +1786,8 @@ static PyObject * mpi_win_shared_query(PyObject *self, PyObject *args) {
 #define VERT_FUNC PyInt_FromLong
 #endif
 
-	PyArrayObject *result;
+	//NUMPY 1.13 change PyArrayObject *result;
+	PyObject *result;
 	MPI_Win win;
 	int rank;
 	MPI_Aint size;
@@ -1974,9 +2105,138 @@ DOUBLE kfv(DOUBLE w, DOUBLE a, DOUBLE alpha)
 
 //MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, hostcomm,ierr)
 
+// void mrk_identify_fptr(void *fptr, char *fstr) {
+// 	char debug_message[1024];
+// 	Dl_info finfo;
+// 	int return_code;
+// 	return_code = dladdr(fptr, &finfo);
+// 	if (!return_code) {
+// 		sprintf(debug_message, "MRK_DEBUG: Problem retrieving program information for %x (%s):  %s \n", fptr, fstr, dlerror());
+// 	} else {
+// 		sprintf(debug_message, "MRK_DEBUG: Address %x (%s) located in %s within %s. \n", fptr, fstr, finfo.dli_fname, finfo.dli_sname);
+// 	}
+// 	perror(debug_message);
+// }
+
+// Function to replace a string with another
+// string
+char *mrk_replace_substr(const char *a_str, const char *a_old_substr, const char *a_new_substr) {
+	char *new_str;
+	int i, cnt = 0;
+	int new_substr_len = strlen(a_new_substr);
+	int old_substr_len = strlen(a_old_substr);
+	char error_message[1024];
+	
+	// Counting the number of times old word
+	// occur in the string
+	for (i = 0; a_str[i] != '\0'; i++)
+	{
+		if (strstr(&a_str[i], a_old_substr) == &a_str[i])
+		{
+			cnt++;
+			// Jumping to index after the old word.
+			i += old_substr_len - 1;
+		}
+	}
+	
+	// Making new string of enough length
+	new_str = (char *)malloc(i + cnt * (new_substr_len - old_substr_len) + 1);
+	if (new_str == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mrk_replace_substr(), malloc() failed to allocate %d bytes to pointer new_str.\n", i + cnt * (new_substr_len - old_substr_len) + 1);
+		perror(error_message);
+	}
+
+	i = 0;
+	while (*a_str)
+	{
+		// compare the substring with the new_str
+		if (strstr(a_str, a_old_substr) == a_str)
+		{
+			strcpy(&new_str[i], a_new_substr);
+			i += new_substr_len;
+			a_str += old_substr_len;
+		}
+		else
+			new_str[i++] = *a_str++;
+	}
+	
+	new_str[i] = '\0';
+	return new_str;
+}
+
+// Retrieves file basename from path
+char* mrk_basename(const char* a_path) {
+	char *basename = NULL;
+	int path_len = strlen(a_path);
+	char error_message[1024];
+	
+	// Find the index of the last occurrence of path separator ('/' for Linux and '\\' for Win)
+	int is_not_found = 1;
+	int idx = -1;
+	int i = -1;
+	for (i = path_len - 1; i >= 0 && idx < 0; --i) {
+		if (a_path[i] == '/' || a_path[i] == '\\') {
+			idx = i;
+		}
+	}
+	
+	if (idx >= 0 && idx < path_len - 1) {
+		// There is at least one separator in path (i.e. path contains both directory name and basename)
+		// move index to the next one to exclude separator character 
+		++idx;
+		
+		// Allocate enough memory for basename. Remember to make space for '\0'.
+		basename = (char *)malloc(strlen(&a_path[idx]) + 1);
+		if (basename == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mrk_basename(), malloc() failed to allocate %d bytes to pointer basename.\n", strlen(&a_path[idx]) + 1);
+			perror(error_message);
+		}
+		
+		// Copy basename from path
+		strcpy(basename, &a_path[idx]);
+		
+	} else if (idx < 0) {
+		// There is no separator. (i.e. path contains only basename)
+		// Must copy whole string of path to basename
+		// Allocate enough memory for basename. Remember to make space for '\0'.
+		basename = (char *)malloc(strlen(a_path) + 1);  // Remember to include '\0'
+		if (basename == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mrk_basename(), malloc() failed to allocate %d bytes to pointer basename.\n", strlen(a_path) + 1);
+			perror(error_message);
+		}
+		// Copy basename from path
+		strcpy(basename, a_path);
+	} else {
+		// The last character of the path is separator (i.e. path contains only directory name)
+		// Basename must be empty
+		// Allocate enough memory for basename. Remember to make space for '\0'.
+		basename = (char *)malloc(1);  // Remember to include '\0'
+		// There is at least one separator
+		if (basename == NULL) {
+			sprintf(error_message, "SX_BAD_ALLOC: In mrk_basename(), malloc() failed to allocate %d bytes to pointer basename.\n", 1);
+			perror(error_message);
+		}
+		// Set empty string to basename
+		basename[0] = '\0';
+	}
+	
+	return basename;
+}
+
+char* mrk_dirname(const char* a_path) {
+	char* basname = mrk_basename(a_path);
+	char* dirname = mrk_replace_substr(a_path, basname, "");
+	free(basname);
+	
+	return dirname;
+}
 
 static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
-
+	// Toshio Moriya 2018/04/25
+	// For error message and debug messages using C way!
+	char error_message[1024];
+	// char debug_message[1024];
+	
 //	MPI_Win_free
 
 //	OMPI_DECLSPEC  int MPI_Win_free(MPI_Win *win);
@@ -1989,19 +2249,144 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 #define VERT_FUNC PyInt_FromLong
 #endif
 
-
 	size_t i, kt, j, nit, k;
 
 	MPI_Comm comm;
 	//	MPI_Win win;
 	float *tvol;
 	float *tweight;
-	int nxt, nyt, nzt, maxr2, nnxo, myid, color, numprocs, ierr, ir;
-
-	if (!PyArg_ParseTuple(args, "lliiiiiiiil", &tvol, &tweight, &nxt, &nyt, &nzt, &maxr2, &nnxo, &myid, &color, &numprocs, &comm))
-			return NULL;
-
- 
+	int nxt, nyt, nzt, maxr2, nnxo, myid, color, numprocs, ierr, ir, n_iter;
+	
+	// Toshio Moriya 2018/05/08
+	// This function is assuming nyt == (nxt-1)*2. See below.
+	if (!PyArg_ParseTuple(args, "lliiiiiiiili", &tvol, &tweight, &nxt, &nyt, &nzt, &maxr2, &nnxo, &myid, &color, &numprocs, &comm, &n_iter)) {
+		sprintf(error_message, "SX_LOGIC_ERROR: In mpi_iterefa(), PyArg_ParseTuple() failed. \n");
+		perror(error_message);
+		return NULL;
+	}
+	
+	// sprintf(debug_message, "MRK_DEBUG: mpi_iterefa() starting. \n"); if( myid == 0 ) { perror(debug_message); }
+	
+	// Check the current directory
+	if( myid == 0 ) {
+		char debug_cwd[1024];
+		if (getcwd(debug_cwd, sizeof(debug_cwd)) == NULL) {
+			sprintf(error_message, "SX_RUNTIME_ERROR: In mpi_iterefa(), getcwd() failed. \n");
+			perror(error_message);
+		}
+	}
+	
+	// // Check the library objects of the original fftw functions
+	// if( myid == 0 ) {
+	// 	sprintf(debug_message, "MRK_DEBUG: Checking the library objects of the original fftw functions. \n");
+	// 	perror("MRK_DEBUG: \n");
+	// 	perror(debug_message); 
+	// 	mrk_identify_fptr(fftw_mpi_init, "fftw_mpi_init");
+	// 	mrk_identify_fptr(fftw_mpi_local_size_3d, "fftw_mpi_local_size_3d");
+	// 	mrk_identify_fptr(fftw_alloc_real, "fftw_alloc_real");
+	// 	mrk_identify_fptr(fftw_mpi_plan_dft_r2c_3d, "fftw_mpi_plan_dft_r2c_3d");
+	// 	mrk_identify_fptr(fftw_mpi_plan_dft_c2r_3d, "fftw_mpi_plan_dft_c2r_3d");
+	// 	mrk_identify_fptr(fftw_sprint_plan, "fftw_sprint_plan");
+	// 	mrk_identify_fptr(fftw_execute, "fftw_execute");
+	// 	mrk_identify_fptr(fftw_destroy_plan, "fftw_destroy_plan");
+	// }
+	
+	// Extract file path of the library objects of this function to locate the correct one
+	Dl_info finfo;  
+	int return_code = dladdr(mpi_iterefa, &finfo);
+	if (!return_code) {
+		sprintf(error_message, "SX_RUNTIME_ERROR: In mpi_iterefa(), dladdr() could not retrieving a dynamic library object information for %x (%s):  %s \n", mpi_iterefa, "mpi_iterefa", dlerror());
+		perror(error_message);
+	}
+	
+	// if( myid == 0 ) {
+	// 	sprintf(debug_message, "MRK_DEBUG: Address %x (%s) located in %s within %s. \n", mpi_iterefa, "mpi_iterefa", finfo.dli_fname, finfo.dli_sname);
+	// 	perror("MRK_DEBUG: \n");
+	// 	perror(debug_message);
+	// }
+	
+	char* dli_fname_correct_dir = mrk_replace_substr(finfo.dli_fname, "python2.7/site-packages/", "");  // remove "python2.7/site-packages/" from directory path
+	char* fftw3_lib_dirname = mrk_dirname(dli_fname_correct_dir);
+	char* mpi_lib_basename = mrk_basename(dli_fname_correct_dir);
+	// if( myid == 0 ) {
+	// 	perror("MRK_DEBUG: \n");
+	// 	sprintf(debug_message, "MRK_DEBUG: dli_fname_correct_dir := %s \n", dli_fname_correct_dir);
+	// 	perror(debug_message);
+	// 	sprintf(debug_message, "MRK_DEBUG: fftw3_lib_dirname     :=  %s \n", fftw3_lib_dirname);
+	// 	perror(debug_message);
+	// 	sprintf(debug_message, "MRK_DEBUG: mpi_lib_basename      :=  %s \n", mpi_lib_basename);
+	// 	perror(debug_message);
+	// }
+	
+	// Obtain the function from the correct library objects
+	// Declare function pointer variable in proper context
+	void (*sxfptr_fftw_mpi_init)(void);  // fftw_mpi_init() -> ibfftw3_mpi.so.3
+	int (*sxfptr_fftw_mpi_local_size_3d)(ptrdiff_t, ptrdiff_t, ptrdiff_t, MPI_Comm comm, ptrdiff_t *, ptrdiff_t *);  // fftw_mpi_local_size_3d() -> libfftw3_mpi.so.3
+	double *(*sxfptr_fftw_alloc_real)(size_t);  // fftw_alloc_real() -> libfftw3.so.3 
+	fftw_plan (*sxfptr_fftw_mpi_plan_dft_r2c_3d)(ptrdiff_t, ptrdiff_t, ptrdiff_t, double *, fftw_complex *, MPI_Comm, unsigned); // fftw_mpi_plan_dft_r2c_3d() -> libfftw3_mpi.so.3
+	fftw_plan (*sxfptr_fftw_mpi_plan_dft_c2r_3d)(ptrdiff_t, ptrdiff_t, ptrdiff_t, fftw_complex *, double *, MPI_Comm, unsigned); // fftw_mpi_plan_dft_c2r_3d() -> libfftw3_mpi.so.3
+	char *(*sxfptr_fftw_sprint_plan)(const fftw_plan); // fftw_sprint_plan() -> libfftw3.so.3 
+	void (*sxfptr_fftw_execute)(const fftw_plan); // fftw_execute() -> libfftw3.so.3
+	void (*sxfptr_fftw_destroy_plan)(fftw_plan); // fftw_destroy_plan() -> libfftw3.so.3
+	
+	
+	// load explicitly the correct library I want to use
+	char* lib_file_path;
+	
+	lib_file_path = mrk_replace_substr(dli_fname_correct_dir, mpi_lib_basename, "libfftw3_mpi.so.3");
+	// if( myid == 0 ) {
+	// 	sprintf(debug_message, "MRK_DEBUG: Generated file_path for libfftw3_mpi.so.3 is %s. \n", lib_file_path);
+	// 	perror(debug_message);
+	// }
+	void *sxhandle_libfftw3_mpi = dlopen(lib_file_path, RTLD_NOW|RTLD_LOCAL);
+	if (sxhandle_libfftw3_mpi == NULL) {
+		sprintf(error_message, "SX_RUNTIME_ERROR: In mpi_iterefa(), dlopen() failed to obtain handle (sxhandle_libfftw3_mpi) of dynamic library object %s.\n", lib_file_path);
+		perror(error_message);
+	}
+	free(lib_file_path);
+	
+	lib_file_path = mrk_replace_substr(dli_fname_correct_dir, mpi_lib_basename, "libfftw3.so.3");
+	// if( myid == 0 ) {
+	// 	sprintf(debug_message, "MRK_DEBUG: Generated file_path for libfftw3_mpi.so.3 is %s. \n", lib_file_path);
+	// 	perror(debug_message);
+	// }
+	void *sxhandle_libfftw3 = dlopen(lib_file_path, RTLD_NOW|RTLD_LOCAL);
+	if (sxhandle_libfftw3 == NULL) {
+		sprintf(error_message, "SX_RUNTIME_ERROR: In mpi_iterefa(), dlopen() failed to obtain handle (sxhandle_libfftw3) of dynamic library object %s.\n", lib_file_path);
+		perror(error_message);
+	}
+	free(lib_file_path);
+	
+	free(mpi_lib_basename);
+	free(fftw3_lib_dirname);
+	free(dli_fname_correct_dir);
+	
+	// Read the address of the function I want to call later 
+	// then assign and cast the function pointers
+	sxfptr_fftw_mpi_init = (void (*)(void))dlsym(sxhandle_libfftw3_mpi, "fftw_mpi_init");
+	sxfptr_fftw_mpi_local_size_3d = (int (*)(ptrdiff_t, ptrdiff_t, ptrdiff_t, MPI_Comm comm, ptrdiff_t *, ptrdiff_t *))dlsym(sxhandle_libfftw3_mpi, "fftw_mpi_local_size_3d");
+	sxfptr_fftw_alloc_real = (double *(*)(size_t))dlsym(sxhandle_libfftw3, "fftw_alloc_real");
+	sxfptr_fftw_mpi_plan_dft_r2c_3d = (fftw_plan (*)(ptrdiff_t, ptrdiff_t, ptrdiff_t, double *, fftw_complex *, MPI_Comm, unsigned))dlsym(sxhandle_libfftw3_mpi, "fftw_mpi_plan_dft_r2c_3d");
+	sxfptr_fftw_mpi_plan_dft_c2r_3d = (fftw_plan (*)(ptrdiff_t, ptrdiff_t, ptrdiff_t, fftw_complex *, double *, MPI_Comm, unsigned))dlsym(sxhandle_libfftw3_mpi, "fftw_mpi_plan_dft_c2r_3d");
+	sxfptr_fftw_sprint_plan = (char *(*)(const fftw_plan))dlsym(sxhandle_libfftw3, "fftw_sprint_plan");
+	sxfptr_fftw_execute = (void (*)(const fftw_plan))dlsym(sxhandle_libfftw3, "fftw_execute");
+	sxfptr_fftw_destroy_plan = (void (*)(fftw_plan))dlsym(sxhandle_libfftw3, "fftw_destroy_plan");
+	
+	// // Check the library objects of the explicitly loaded fftw functions
+	// if( myid == 0 ) {
+	// 	sprintf(debug_message, "MRK_DEBUG: Checking the library objects of the explicitly loaded fftw functions. \n");
+	// 	perror("MRK_DEBUG: \n");
+	// 	perror(debug_message); 
+	// 	mrk_identify_fptr(sxfptr_fftw_mpi_init, "sxfptr_fftw_mpi_init");
+	// 	mrk_identify_fptr(sxfptr_fftw_mpi_local_size_3d, "sxfptr_fftw_mpi_local_size_3d");
+	// 	mrk_identify_fptr(sxfptr_fftw_alloc_real, "sxfptr_fftw_alloc_real");
+	// 	mrk_identify_fptr(sxfptr_fftw_mpi_plan_dft_r2c_3d, "sxfptr_fftw_mpi_plan_dft_r2c_3d");
+	// 	mrk_identify_fptr(sxfptr_fftw_mpi_plan_dft_c2r_3d, "sxfptr_fftw_mpi_plan_dft_c2r_3d");
+	// 	mrk_identify_fptr(sxfptr_fftw_sprint_plan, "sxfptr_fftw_sprint_plan");
+	// 	mrk_identify_fptr(sxfptr_fftw_execute, "sxfptr_fftw_execute");
+	// 	mrk_identify_fptr(sxfptr_fftw_destroy_plan, "sxfptr_fftw_destroy_plan");
+	// } 
+	
 	int main_node = 0;
 
 	int nzc = nzt/2;
@@ -2012,8 +2397,10 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 
 	int ncx = nyt/2;
 
+	// Toshio Moriya 2018/05/08
+	// Here, this function is assuming nyt == (nxt-1)*2
 	float fnorma = 1.0f/(float)(nyt*nyt*nzt);
-
+	
 	fftw_plan plan;
 	ptrdiff_t alloc_local, local_n0, local_0_start;
 //#ifdef False
@@ -2027,35 +2414,48 @@ if( myid == 0 ) {
 	for (i=0;i<2*nxt*nyt*nzt;++i) qt += tvol[i];
 	printf( "\n  tvol sum1     %e",qt);
 
-        qt = 0.0;
-        for (i=0;i<nx_extended*nyt*nzt;++i) qt += tvol[i];
-        printf( "\n  tvol sum2     %e",qt);
-
-
+	qt = 0.0;
+	for (i=0;i<nx_extended*nyt*nzt;++i) qt += tvol[i];
+	printf( "\n  tvol sum2     %e",qt);
 }
 #endif
-    fftw_mpi_init();
-    //if( myid == 0 ) printf( "\n initialize mpi \n");
-
-
+	// fftw_mpi_init();
+	sxfptr_fftw_mpi_init();
+	//if( myid == 0 ) printf( "\n initialize mpi \n");
 
 ierr = MPI_Barrier(comm);
-
-	 /* get local data size and allocate   in the order nz ny, nx/2+1 */
-	 alloc_local = fftw_mpi_local_size_3d(nzt, nyt, nxt, comm,  &local_n0, &local_0_start);
-	 double *cvv = fftw_alloc_real(2*MAX(alloc_local,1)); //not cleat alloc_local can be zero for dormant cpus
+	
+	/* get local data size and allocate   in the order nz ny, nx/2+1 */
+	// alloc_local = fftw_mpi_local_size_3d(nzt, nyt, nxt, comm,  &local_n0, &local_0_start);
+	alloc_local = sxfptr_fftw_mpi_local_size_3d(nzt, nyt, nxt, comm,  &local_n0, &local_0_start);
+	// double *cvv = fftw_alloc_real(2*MAX(alloc_local,1)); //not cleat alloc_local can be zero for dormant cpus
+	double *cvv = sxfptr_fftw_alloc_real(2*MAX(alloc_local,1)); //not cleat alloc_local can be zero for dormant cpus
+	if (cvv == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mpi_iterefa(), sxfptr_fftw_alloc_real() failed to allocate %d bytes to pointer cvv.\n", MAX(alloc_local,1)*sizeof(float));
+		perror(error_message);
+	}
+	
 //>>>printf( "\n  memory allocated    %d    %td    %td     %td\n",myid,alloc_local,local_n0,local_0_start);
 ierr = MPI_Barrier(comm);
 
 float startTime = (float)clock()/CLOCKS_PER_SEC;
-         fftw_plan plan_real_to_complex = fftw_mpi_plan_dft_r2c_3d(nzt, nyt, nyt, cvv, (fftw_complex *) cvv, comm, FFTW_MEASURE);
-         fftw_plan plan_complex_to_real = fftw_mpi_plan_dft_c2r_3d(nzt, nyt, nyt, (fftw_complex *) cvv, cvv, comm, FFTW_MEASURE);
+	// Toshio Moriya 2018/05/08
+	// Here, this function is assuming nyt == (nxt-1)*2
+	// fftw_plan plan_real_to_complex = fftw_mpi_plan_dft_r2c_3d(nzt, nyt, nyt, cvv, (fftw_complex *)cvv, comm, FFTW_MEASURE);
+	fftw_plan plan_real_to_complex = sxfptr_fftw_mpi_plan_dft_r2c_3d(nzt, nyt, nyt, cvv, (fftw_complex *)cvv, comm, FFTW_MEASURE);
+	// fftw_plan plan_complex_to_real = fftw_mpi_plan_dft_c2r_3d(nzt, nyt, nyt, (fftw_complex *)cvv, cvv, comm, FFTW_MEASURE);
+	fftw_plan plan_complex_to_real = sxfptr_fftw_mpi_plan_dft_c2r_3d(nzt, nyt, nyt, (fftw_complex *)cvv, cvv, comm, FFTW_MEASURE);
+	
 float endTime = (float)clock()/CLOCKS_PER_SEC -startTime;
 ///>>>printf( "\n plan ready   time   %f\n",endTime);
 
 //	float *rin = fftwf_alloc_real(alloc_local); //This is buffer for distributed weights
 	float *rin = malloc(MAX(alloc_local,1)*sizeof(float)); //This is buffer for distributed weights
-	//  Distribute tweight -> rin
+	if (rin == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mpi_iterefa(), malloc() failed to allocate %d bytes to pointer rin.\n", MAX(alloc_local,1)*sizeof(float));
+		perror(error_message);
+	}
+	// Distribute tweight -> rin
 	int tag1 = 72+color*100;
 	int tag2 = 11+color*100;
 	if( myid == 0 ) {
@@ -2097,8 +2497,14 @@ float endTime = (float)clock()/CLOCKS_PER_SEC -startTime;
 ierr = MPI_Barrier(comm);
 	//printf( "\n MOVING ON   AAA %d \n",myid);
 	double *nwe;
-	nwe = fftw_alloc_real(MAX(alloc_local,1));//(double*)malloc( size*sizeof(double) );
-	//  nwe has to be distributed
+	// nwe = fftw_alloc_real(MAX(alloc_local,1));//(double*)malloc( size*sizeof(double) );
+	nwe = sxfptr_fftw_alloc_real(MAX(alloc_local,1));
+	if (nwe == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mpi_iterefa(), sxfptr_fftw_alloc_real() failed to allocate %d bytes to pointer nwe.\n", MAX(alloc_local,1));
+		perror(error_message);
+	}
+	
+	// nwe has to be distributed
 	for (kt=0; kt<local_n0; ++kt) {
 		int k  = kt+local_0_start;
 		int kk = (k>nzc)?(k-nzt):k;
@@ -2118,6 +2524,11 @@ ierr = MPI_Barrier(comm);
 	int nbel = 5000;
 	double *beltab;
 	beltab = (double*)malloc( nbel*sizeof(double) );
+	if (beltab == NULL) {
+		sprintf(error_message, "SX_BAD_ALLOC: In mpi_iterefa(), malloc() failed to allocate %d bytes to pointer beltab.\n", nbel*sizeof(double));
+		perror(error_message);
+	}
+	
 	double radius = 1.9*2;
 	double alpha = 15.0;
 	double normk = kfv(0.0L, radius, alpha);
@@ -2125,10 +2536,12 @@ ierr = MPI_Barrier(comm);
 		double rr = i/(double)(nbel-1)/2.0L;
 		beltab[i] = kfv(rr, radius, alpha)/normk;
 	}
-	size_t niter = 10;
+	
+	// size_t niter = 10;
+	size_t niter = n_iter;
 	for (nit=0; nit<niter; ++nit) {
 //if( myid == 0 )  printf( "\n ITERATION  %d ",nit);
-
+		// sprintf(debug_message, "MRK_DEBUG: mpi_iterefa() starting ITERATION %d. \n", nit); if( myid == 0 ) { perror(debug_message); }
 		for (k=0; k<local_n0;++k) {
 			for (j=0;j<nyt;++j) {
 				for (i=0;i<nxt;++i) {
@@ -2141,9 +2554,10 @@ ierr = MPI_Barrier(comm);
 				}
 			}
 		}
-
-   		fftw_execute(plan_complex_to_real);
-
+		
+		// fftw_execute(plan_complex_to_real);
+		sxfptr_fftw_execute(plan_complex_to_real);
+		
 		for (kt=0; kt<local_n0;++kt)  {
 			int  k = kt+local_0_start;
 			float argz = (k<nzc)?(k*k) : (k-nzt)*(k-nzt);
@@ -2158,30 +2572,35 @@ ierr = MPI_Barrier(comm);
 				}
 			}
 		}
+		
 //if( myid == 0 ) printf( "\n CVV  %d  %ld  %e    %e    %e     %e     %e    %e    %e     %e\n",myid,nit,cvv[0],cvv[1],cvv[2],cvv[3],cvv[4],cvv[5],cvv[6],cvv[7]);
-  		fftw_execute(plan_real_to_complex);
+		// fftw_execute(plan_real_to_complex);
+		sxfptr_fftw_execute(plan_real_to_complex);
+		
 		//for (i=0; i<alloc_local; ++i) nwe[i] /= MAX(1.0e-6, sqrt(cvv[2*i]*cvv[2*i]+cvv[2*i+1]*cvv[2*i+1]));
 		double ama = -1.e23;
 		double ami = -ama;
-                for (k=0; k<local_n0;++k) {
-                        for (j=0;j<nyt;++j) {
-                                for (i=0;i<nxt;++i) {
-                                        size_t lan = i + nxt*(j + k*nyt);
-                                        size_t lad = 2*i + nx_extended*(j + k*nyt);
+		for (k=0; k<local_n0;++k) {
+			for (j=0;j<nyt;++j) {
+				for (i=0;i<nxt;++i) {
+					size_t lan = i + nxt*(j + k*nyt);
+					size_t lad = 2*i + nx_extended*(j + k*nyt);
 					nwe[lan] /= MAX(1.0e-6, sqrt(cvv[lad]*cvv[lad]+cvv[lad+1]*cvv[lad+1]));
 					ama = MAX(ama,nwe[lan]);
 					ami = (-1)*MAX(-ami, -nwe[lan]);
-                         	}
-                        }
-                }
+				}
+			}
+		}
 
 //printf( "\n EXTRA  %d  %ld  %e    %e",myid,nit,ama,ami);
 //if( myid == 0 ) printf( "\n NWE  %d  %ld  %e    %e    %e     %e     %e    %e    %e     %e\n",myid,nit,nwe[0],nwe[1],nwe[2],nwe[3],nwe[4],nwe[5],nwe[6],nwe[7]);
 
 	}
 
-	fftw_destroy_plan(plan_real_to_complex);
-	fftw_destroy_plan(plan_complex_to_real);
+	// fftw_destroy_plan(plan_real_to_complex);
+	// fftw_destroy_plan(plan_complex_to_real);
+	sxfptr_fftw_destroy_plan(plan_real_to_complex);
+	sxfptr_fftw_destroy_plan(plan_complex_to_real);
 
 	free(beltab);
 	free(cvv);
@@ -2216,10 +2635,9 @@ ierr = MPI_Barrier(comm);
 						}
 					}
 				}
-
+				
 				free(nwe);
-
-
+				
 				//printf( "\n  JOJ    %d    %E    %E",i,tweight[local_0_start+i],rin[i]);}
 			} else {
 				// receive tlocal_n0, tlocal_0_start, talloc_local
@@ -2230,6 +2648,10 @@ ierr = MPI_Barrier(comm);
 				// receive part of nwe tweight[tlocal_0_start*M*(N+1)]
 				if( itemp[0] > 0 )  {
 					double *nwe = (double*)malloc( itemp[2]*sizeof(double) );
+					if (nwe == NULL) {
+						sprintf(error_message, "SX_BAD_ALLOC: In mpi_iterefa(), malloc() failed to allocate %d byte to pointer nwe.\n", itemp[2]*sizeof(double));
+						perror(error_message);
+					}
 					int tag21 = tag2+ir;
 					ierr=MPI_Recv( nwe, itemp[2], (MPI_Datatype)MPI_DOUBLE, ir, tag21, comm, &status );
 					//printf( "\n RECEIVED  C   %d  %d\n",ir,ierr);
@@ -2279,30 +2701,28 @@ ierr = MPI_Barrier(comm);
 ierr = MPI_Barrier(comm);
 /*
 if( myid == 0 ) {
-
 	printf( "\n  vol    %f    %f    %f     %f",tvol[0],tvol[1],tvol[2],tvol[3]);
 	printf( "\n  twe    %f    %f    %f     %f\n",tweight[0],tweight[1],tweight[2],tweight[3]);
 	double qt = 0.0;
 	for (i=0;i<2*size;++i) qt += tvol[i];
 	printf( "\n  SECOND  tvol sum     %e",qt);
-
-
 }
 ierr = MPI_Barrier(comm);
 */
 //#endif
 	//printf( "\n DONE  %d \n",myid);
-
 ierr = MPI_Barrier(comm);
 
 //    printf( "\n generated volume   %td   %td   %d    %d   %E  %E\n",local_n0, local_0_start, alloc_local, myid,  rin[0],rin[1]);
 
-    PyArrayObject *result;
-    result = PyTuple_New(1);
-    PyTuple_SetItem(result,0,PyString_FromString("1111"));
-    return result;
-
-
+	//NUMPY 1.13 change PyArrayObject *result;
+	PyObject *result;
+	result = PyTuple_New(1);
+	PyTuple_SetItem(result,0,PyString_FromString("1111"));
+	
+	// sprintf(debug_message, "MRK_DEBUG: mpi_iterefa() is successfully returning! \n"); if( myid == 0 ) { perror(debug_message); }
+	
+	return result;
 //	return PyInt_FromLong((long)ierr);
 }
 
@@ -2638,4 +3058,3 @@ void myerror(char *s) {
 #ifdef DOSLU
 #include "./solvers.c"
 #endif
-
