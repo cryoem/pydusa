@@ -106,6 +106,10 @@ char REV_SRC[]="$Revision$";
 // #include <mpi.h>  # This is included in "fftw3-mpi.h"
 #include "fftw3-mpi.h"
 
+// NOTE: Markus 2018/09/26
+// Try to initialize fftw_threading.
+int fftw_init_threads(void);
+
 /*
 static int calls = 0;
 static int errs = 0;
