@@ -108,7 +108,7 @@ char REV_SRC[]="$Revision$";
 
 // NOTE: Markus 2018/09/26
 // Try to initialize fftw_threading.
-int fftw_init_threads(void);
+fftw_init_threads();
 
 /*
 static int calls = 0;
