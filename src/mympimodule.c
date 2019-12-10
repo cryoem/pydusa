@@ -659,14 +659,14 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 		n=maxprocs;
 		if(n > 0){
 			for(i=0;i<n;i++) {
-				len=strlen(PyUnicode_AsString(input));
+				len=strlen(PyUnicode_AsUTF8(input));
 				argv[i]=(char*)malloc(len+1);
 				if (argv[i] == NULL) {
 					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 					perror(error_message);
 				}
 				argv[i][len]=(char)0;
-				strncpy(argv[i],PyUnicode_AsString(input),(size_t)len);
+				strncpy(argv[i],PyUnicode_AsUTF8(input),(size_t)len);
 				/* printf("%s\n",argv[i]); */
 			}
 		}
@@ -686,14 +686,14 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 		n=PyList_Size(input);
 		if(n > 0){
 			for(i=0;i<n;i++) {
-				len=strlen(PyUnicode_AsString(PyList_GetItem(input,i)));
+				len=strlen(PyUnicode_AsUTF8(PyList_GetItem(input,i)));
 				argv[i]=(char*)malloc(len+1);
 				if (argv[i] == NULL) {
 					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 					perror(error_message);
 				}
 				argv[i][len]=(char)0;
-				strncpy(argv[i],PyUnicode_AsString(PyList_GetItem(input,i)),(size_t)len);
+				strncpy(argv[i],PyUnicode_AsUTF8(PyList_GetItem(input,i)),(size_t)len);
 				printf("%s\n",argv[i]);
 			}
 		}
@@ -971,14 +971,14 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 		}
 		n=PyList_Size(input);
 		for(i=0;i<n;i++) {
-			len=strlen(PyUnicode_AsString(PyList_GetItem(input,i)));
+			len=strlen(PyUnicode_AsUTF8(PyList_GetItem(input,i)));
 			argv[i]=(char*)malloc(len+1);
 			if (argv[i] == NULL) {
 				sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 				perror(error_message);
 			}
 			argv[i][len]=(char)0;
-			strncpy(argv[i],PyUnicode_AsString(PyList_GetItem(input,i)),(size_t)len);
+			strncpy(argv[i],PyUnicode_AsUTF8(PyList_GetItem(input,i)),(size_t)len);
 			/* printf("%s ",argv[i]); */
 		}
 
