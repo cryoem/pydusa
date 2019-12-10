@@ -5063,10 +5063,9 @@ fi
 
 { echo "$as_me:$LINENO: checking for python include directory" >&5
 echo $ECHO_N "checking for python include directory... $ECHO_C" >&6; }
-PY_VERSION=`$py_path -c 'import sys; print sys.version[:3]'`
-PY_PREFIX=`$py_path -c 'import sys; print sys.prefix'`
-if test -f $PY_PREFIX/include/python$PY_VERSION/Python.h; then
-   PY_HEADER="-I$PY_PREFIX/include/python$PY_VERSION"
+PY_HEADER=`$py_path -c "import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))"`
+if test -f $PY_HEADER/Python.h; then
+   PY_HEADER="-I$PY_HEADER"
    { echo "$as_me:$LINENO: result: $PY_HEADER" >&5
 echo "${ECHO_T}$PY_HEADER" >&6; }
 else
@@ -5093,10 +5092,9 @@ echo "$as_me: error: python module numpy is not installed" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-if test -d ${PY_PREFIX}/Extras/lib/python/numpy/core/include; then
-   PY_HEADER_NUMPY="-I${PY_PREFIX}/Extras/lib/python/numpy/core/include"
-elif test -d ${PY_PREFIX}/lib/python$PY_VERSION/site-packages/numpy/core/include; then 
-   PY_HEADER_NUMPY="-I${PY_PREFIX}/lib/python$PY_VERSION/site-packages/numpy/core/include"   
+PY_HEADER_NUMPY=$(python -c "import numpy; print(numpy.get_include())")
+if test "$?" == "0"; then
+   PY_HEADER_NUMPY="-I${PY_HEADER_NUMPY}"
 else
    { { echo "$as_me:$LINENO: error: Unable to find numpy include directory!" >&5
 echo "$as_me: error: Unable to find numpy include directory!" >&2;}
