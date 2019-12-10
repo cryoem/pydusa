@@ -239,7 +239,7 @@ static PyObject *mpi_get_processor_name(PyObject *self, PyObject *args)
 char c_name[MPI_MAX_PROCESSOR_NAME];
 int c_len;
         ierr=MPI_Get_processor_name((char *)c_name,&c_len);
-      return PyString_FromStringAndSize(c_name,c_len);
+      return PyUnicode_FromStringAndSize(c_name,c_len);
 }
 
 int getptype(long mpitype) {
@@ -659,14 +659,14 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 		n=maxprocs;
 		if(n > 0){
 			for(i=0;i<n;i++) {
-				len=strlen(PyString_AsString(input));
+				len=strlen(PyUnicode_AsString(input));
 				argv[i]=(char*)malloc(len+1);
 				if (argv[i] == NULL) {
 					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 					perror(error_message);
 				}
 				argv[i][len]=(char)0;
-				strncpy(argv[i],PyString_AsString(input),(size_t)len);
+				strncpy(argv[i],PyUnicode_AsString(input),(size_t)len);
 				/* printf("%s\n",argv[i]); */
 			}
 		}
@@ -686,14 +686,14 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 		n=PyList_Size(input);
 		if(n > 0){
 			for(i=0;i<n;i++) {
-				len=strlen(PyString_AsString(PyList_GetItem(input,i)));
+				len=strlen(PyUnicode_AsString(PyList_GetItem(input,i)));
 				argv[i]=(char*)malloc(len+1);
 				if (argv[i] == NULL) {
 					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 					perror(error_message);
 				}
 				argv[i][len]=(char)0;
-				strncpy(argv[i],PyString_AsString(PyList_GetItem(input,i)),(size_t)len);
+				strncpy(argv[i],PyUnicode_AsString(PyList_GetItem(input,i)),(size_t)len);
 				printf("%s\n",argv[i]);
 			}
 		}
@@ -773,7 +773,7 @@ MPI_Info info;
 		return NULL;
 	// ierr=MPI_Open_port((MPI_Info)info,port_name);
 	ierr=MPI_Open_port(info,port_name);
-	return PyString_FromString(port_name);
+	return PyUnicode_FromString(port_name);
 }
 
 static PyObject *mpi_close_port(PyObject *self, PyObject *args)
@@ -971,14 +971,14 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 		}
 		n=PyList_Size(input);
 		for(i=0;i<n;i++) {
-			len=strlen(PyString_AsString(PyList_GetItem(input,i)));
+			len=strlen(PyUnicode_AsString(PyList_GetItem(input,i)));
 			argv[i]=(char*)malloc(len+1);
 			if (argv[i] == NULL) {
 				sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 				perror(error_message);
 			}
 			argv[i][len]=(char)0;
-			strncpy(argv[i],PyString_AsString(PyList_GetItem(input,i)),(size_t)len);
+			strncpy(argv[i],PyUnicode_AsString(PyList_GetItem(input,i)),(size_t)len);
 			/* printf("%s ",argv[i]); */
 		}
 
@@ -1030,12 +1030,12 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 			free(argv[i]);
 */
 		}
-		return PyString_FromString(argstr);
+		return PyUnicode_FromString(argstr);
 #endif
 #ifdef ARG_ARRAY
 		result = PyTuple_New(argc);
 		for(i=0;i<argc;i++) {
-			PyTuple_SetItem(result,i,PyString_FromString(argv[i]));
+			PyTuple_SetItem(result,i,PyUnicode_FromString(argv[i]));
 		}
 /*
 for(i=0;i<argc;i++) {
@@ -2718,7 +2718,7 @@ ierr = MPI_Barrier(comm);
 	//NUMPY 1.13 change PyArrayObject *result;
 	PyObject *result;
 	result = PyTuple_New(1);
-	PyTuple_SetItem(result,0,PyString_FromString("1111"));
+	PyTuple_SetItem(result,0,PyUnicode_FromString("1111"));
 	
 	// sprintf(debug_message, "MRK_DEBUG: mpi_iterefa() is successfully returning! \n"); if( myid == 0 ) { perror(debug_message); }
 	
@@ -2766,7 +2766,7 @@ static PyObject * pydusa_version(PyObject *self, PyObject *args) {
 		cw[i] = (char) 0;
 	}
 	sprintf(cw, "\n%s\nCompile time: %s  %s\n",STRINGIZE_VALUE_OF(PYDUSA_VERSION), __DATE__, __TIME__);
-	return PyString_FromString(cw);
+	return PyUnicode_FromString(cw);
 }
 
 
@@ -2802,7 +2802,7 @@ strncat(cw,"	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF\n",80);
 strncat(cw,"	MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE\n",80);
 strncat(cw,"	USE OF THIS SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK OR\n",80);
 strncat(cw,"	OTHER RIGHTS.\n",80);
-return PyString_FromString(cw);
+return PyUnicode_FromString(cw);
 }
 /*
 **** to add ****
@@ -2900,13 +2900,13 @@ PyMODINIT_FUNC initmpi(void)
     Py_INCREF(mpiError);
     PyModule_AddObject(m, "error", mpiError);
     d = PyModule_GetDict(m);
-    tmp = PyString_FromString(VERSION);
+    tmp = PyUnicode_FromString(VERSION);
     PyDict_SetItemString(d,   "VERSION", tmp);  Py_DECREF(tmp);
     tmp = PyInt_FromLong((long)MPI_VERSION);
     PyDict_SetItemString(d,   "MPI_VERSION", tmp);  Py_DECREF(tmp);
     tmp = PyInt_FromLong((long)MPI_SUBVERSION);
     PyDict_SetItemString(d,   "MPI_SUBVERSION", tmp);  Py_DECREF(tmp);
-    tmp = PyString_FromString(COPYWRITE);
+    tmp = PyUnicode_FromString(COPYWRITE);
     PyDict_SetItemString(d,   "COPYWRITE", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_CHAR);
     PyDict_SetItemString(d,   "MPI_CHAR", tmp);  Py_DECREF(tmp);
@@ -3023,12 +3023,12 @@ PyMODINIT_FUNC initmpi(void)
     tmp = VERT_FUNC((CAST)MPI_WTIME_IS_GLOBAL);
     PyDict_SetItemString(d,   "MPI_WTIME_IS_GLOBAL", tmp);  Py_DECREF(tmp);
 
-    tmp = PyString_FromString(LIBRARY);
+    tmp = PyUnicode_FromString(LIBRARY);
     PyDict_SetItemString(d,   "ARRAY_LIBRARY", tmp);  Py_DECREF(tmp);
 
-    tmp = PyString_FromString(DATE_DOC);
+    tmp = PyUnicode_FromString(DATE_DOC);
     PyDict_SetItemString(d,   "DATE_DOC", tmp);  Py_DECREF(tmp);
-    tmp = PyString_FromString(DATE_SRC);
+    tmp = PyUnicode_FromString(DATE_SRC);
     PyDict_SetItemString(d,   "DATE_SRC", tmp);  Py_DECREF(tmp);
 
 #ifdef MPI2
