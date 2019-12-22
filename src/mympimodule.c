@@ -2883,6 +2883,18 @@ static PyMethodDef mpiMethods[] = {
 /*
 */
 
+static struct PyModuleDef mpiModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "mpi",
+        NULL,
+        -1,
+        mpiMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
 PyMODINIT_FUNC initmpi(void)
 {
 #ifdef DO_UNSIGED
@@ -2895,7 +2907,7 @@ PyMODINIT_FUNC initmpi(void)
 	PyObject *m, *d;
     PyObject *tmp;
 	import_array();
-	m=Py_InitModule("mpi", mpiMethods);
+	m=PyModule_Create(&mpiModuleDef);
 	mpiError = PyErr_NewException("mpi.error", NULL, NULL);
     Py_INCREF(mpiError);
     PyModule_AddObject(m, "error", mpiError);
@@ -3046,6 +3058,7 @@ PyMODINIT_FUNC initmpi(void)
 
 
 
+return m;
 
 
 }
