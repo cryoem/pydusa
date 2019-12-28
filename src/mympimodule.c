@@ -2895,7 +2895,7 @@ static struct PyModuleDef mpiModuleDef = {
         NULL
 };
 
-PyMODINIT_FUNC initmpi(void)
+PyMODINIT_FUNC PyInit_mpi(void)
 {
 #ifdef DO_UNSIGED
 #define CAST unsigned long
