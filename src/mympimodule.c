@@ -239,7 +239,7 @@ static PyObject *mpi_get_processor_name(PyObject *self, PyObject *args)
 char c_name[MPI_MAX_PROCESSOR_NAME];
 int c_len;
         ierr=MPI_Get_processor_name((char *)c_name,&c_len);
-      return PyString_FromStringAndSize(c_name,c_len);
+      return PyUnicode_FromStringAndSize(c_name,c_len);
 }
 
 int getptype(long mpitype) {
@@ -288,7 +288,7 @@ MPI_Group group;
 		return NULL;
 	group=(MPI_Group)in_group;
 	ierr=MPI_Group_rank (group, &rank );
-	return PyInt_FromLong((long)rank);
+	return PyLong_FromLong((long)rank);
 }
 
 static PyObject *mpi_group_incl(PyObject *self, PyObject *args)
@@ -299,7 +299,7 @@ static PyObject *mpi_group_incl(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 long in_group;
 int *ranks,n;
@@ -336,7 +336,7 @@ static PyObject *mpi_comm_group(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 MPI_Group group;
 COM_TYPE comm;
@@ -359,7 +359,7 @@ static PyObject *mpi_comm_dup(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 long tmpcomm;
 COM_TYPE  incomm,outcomm;
@@ -380,7 +380,7 @@ static PyObject *mpi_comm_set_errhandler(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 long tmpcomm;
 COM_TYPE  incomm;
@@ -400,7 +400,7 @@ int choice;
     printf("mpi_comm_set_errhandler not supported on this platform\n");
 #endif
 
-	return PyInt_FromLong((long)ierr);
+	return PyLong_FromLong((long)ierr);
 }
 
 
@@ -414,7 +414,7 @@ static PyObject *mpi_comm_create(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  incomm,outcomm;
 long group;
@@ -435,7 +435,7 @@ int ierr;
 	if (!PyArg_ParseTuple(args, "l", &comm))
         return NULL;
     ierr=MPI_Barrier((MPI_Comm)comm );
-	return PyInt_FromLong((long)ierr);
+	return PyLong_FromLong((long)ierr);
 }
 static PyObject *mpi_send(PyObject *self, PyObject *args)
 {
@@ -464,7 +464,7 @@ char *aptr;
 	aptr=(char*)(array->data);
     ierr=MPI_Send(aptr,  count,  (MPI_Datatype)datatype,  dest,  tag,  (MPI_Comm)comm );
     Py_DECREF(array);
-	return PyInt_FromLong((long)ierr);
+	return PyLong_FromLong((long)ierr);
 }
 
 
@@ -510,7 +510,7 @@ int dimensions[1],statray[3];
 
 static PyObject *mpi_error(PyObject *self, PyObject *args)
 {
-	return PyInt_FromLong((long)ierr);
+	return PyLong_FromLong((long)ierr);
 }
 
 
@@ -551,7 +551,7 @@ Output Parameters
         }
 
 /*        printf("mpi_attr_get:  attr_val: %d  %d\n",*attr_value,flag); */
-        return( PyInt_FromLong((long)*attr_value));
+        return( PyLong_FromLong((long)*attr_value));
 }
 
 #ifdef MPI2
@@ -583,7 +583,7 @@ static PyObject *mpi_intercomm_merge(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  incomm,outcomm;
 int high;
@@ -601,7 +601,7 @@ static PyObject *mpi_comm_free(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  incomm;
 
@@ -622,7 +622,7 @@ static PyObject *mpi_comm_spawn(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 // int maxprocs,info,root,comm;
 int maxprocs,root;
@@ -659,14 +659,14 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 		n=maxprocs;
 		if(n > 0){
 			for(i=0;i<n;i++) {
-				len=strlen(PyString_AsString(input));
+				len=strlen(PyUnicode_AsUTF8(input));
 				argv[i]=(char*)malloc(len+1);
 				if (argv[i] == NULL) {
 					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 					perror(error_message);
 				}
 				argv[i][len]=(char)0;
-				strncpy(argv[i],PyString_AsString(input),(size_t)len);
+				strncpy(argv[i],PyUnicode_AsUTF8(input),(size_t)len);
 				/* printf("%s\n",argv[i]); */
 			}
 		}
@@ -686,14 +686,14 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 		n=PyList_Size(input);
 		if(n > 0){
 			for(i=0;i<n;i++) {
-				len=strlen(PyString_AsString(PyList_GetItem(input,i)));
+				len=strlen(PyUnicode_AsUTF8(PyList_GetItem(input,i)));
 				argv[i]=(char*)malloc(len+1);
 				if (argv[i] == NULL) {
 					sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 					perror(error_message);
 				}
 				argv[i][len]=(char)0;
-				strncpy(argv[i],PyString_AsString(PyList_GetItem(input,i)),(size_t)len);
+				strncpy(argv[i],PyUnicode_AsUTF8(PyList_GetItem(input,i)),(size_t)len);
 				printf("%s\n",argv[i]);
 			}
 		}
@@ -748,7 +748,7 @@ static PyObject *mpi_comm_get_parent(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  outcomm;
 ierr=MPI_Comm_get_parent((MPI_Comm*)&outcomm);
@@ -763,7 +763,7 @@ static PyObject *mpi_open_port(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 char  port_name[MPI_MAX_PORT_NAME];
 // int info;
@@ -773,7 +773,7 @@ MPI_Info info;
 		return NULL;
 	// ierr=MPI_Open_port((MPI_Info)info,port_name);
 	ierr=MPI_Open_port(info,port_name);
-	return PyString_FromString(port_name);
+	return PyUnicode_FromString(port_name);
 }
 
 static PyObject *mpi_close_port(PyObject *self, PyObject *args)
@@ -784,7 +784,7 @@ static PyObject *mpi_close_port(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 char  *port_name;
 	if (!PyArg_ParseTuple(args, "s", &port_name))
@@ -801,7 +801,7 @@ static PyObject *mpi_comm_accept(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  comm,newcomm;
 char* port_name;
@@ -823,7 +823,7 @@ static PyObject *mpi_comm_connect(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  comm,newcomm;
 char* port_name;
@@ -845,7 +845,7 @@ static PyObject *mpi_comm_disconnect(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  comm;
 	if (!PyArg_ParseTuple(args, "i", &comm))
@@ -864,7 +864,7 @@ static PyObject *mpi_comm_split(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 int color,key;
 COM_TYPE  incomm,outcomm;
@@ -884,7 +884,7 @@ COM_TYPE comm;
 	if (!PyArg_ParseTuple(args, "iil", &source,&tag,&comm))
         return NULL;
     ierr=MPI_Probe(source,tag, (MPI_Comm )comm, &status );
-	return PyInt_FromLong((long)0);
+	return PyLong_FromLong((long)0);
 }
 
 static PyObject *mpi_get_count(PyObject *self, PyObject *args)
@@ -896,7 +896,7 @@ int count;
 	if (!PyArg_ParseTuple(args, "l",&datatype))
         return NULL;
     ierr=MPI_Get_count(&status,(MPI_Datatype)datatype,&count);
-	return PyInt_FromLong((long)count);
+	return PyLong_FromLong((long)count);
 }
 
 
@@ -909,7 +909,7 @@ int numprocs;
 	if (!PyArg_ParseTuple(args, "l",&comm))
         return NULL;
 	ierr=MPI_Comm_size((MPI_Comm)comm,&numprocs);
-	return PyInt_FromLong((long)numprocs);
+	return PyLong_FromLong((long)numprocs);
 }
 
 static PyObject *mpi_comm_rank(PyObject *self, PyObject *args)
@@ -921,7 +921,7 @@ int rank;
 	if (!PyArg_ParseTuple(args, "l",&comm))
         return NULL;
 	ierr=MPI_Comm_rank((MPI_Comm)comm,&rank);
-	return PyInt_FromLong((long)rank);
+	return PyLong_FromLong((long)rank);
 }
 
 
@@ -934,7 +934,7 @@ COM_TYPE comm;
 	if (!PyArg_ParseTuple(args, "iil", &source,&tag,&comm))
         return NULL;
     ierr=MPI_Iprobe(source,tag, (MPI_Comm )comm, &flag,&status );
-	return PyInt_FromLong((long)flag);
+	return PyLong_FromLong((long)flag);
 }
 
 static PyObject * mpi_init(PyObject *self, PyObject *args) {
@@ -971,14 +971,14 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 		}
 		n=PyList_Size(input);
 		for(i=0;i<n;i++) {
-			len=strlen(PyString_AsString(PyList_GetItem(input,i)));
+			len=strlen(PyUnicode_AsUTF8(PyList_GetItem(input,i)));
 			argv[i]=(char*)malloc(len+1);
 			if (argv[i] == NULL) {
 				sprintf(error_message, "SX_BAD_ALLOC: In mpi_init(), malloc() failed to allocate %d bytes to pointer argv[i].\n", len+1);
 				perror(error_message);
 			}
 			argv[i][len]=(char)0;
-			strncpy(argv[i],PyString_AsString(PyList_GetItem(input,i)),(size_t)len);
+			strncpy(argv[i],PyUnicode_AsUTF8(PyList_GetItem(input,i)),(size_t)len);
 			/* printf("%s ",argv[i]); */
 		}
 
@@ -1030,12 +1030,12 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 			free(argv[i]);
 */
 		}
-		return PyString_FromString(argstr);
+		return PyUnicode_FromString(argstr);
 #endif
 #ifdef ARG_ARRAY
 		result = PyTuple_New(argc);
 		for(i=0;i<argc;i++) {
-			PyTuple_SetItem(result,i,PyString_FromString(argv[i]));
+			PyTuple_SetItem(result,i,PyUnicode_FromString(argv[i]));
 		}
 /*
 for(i=0;i<argc;i++) {
@@ -1525,7 +1525,7 @@ char *sptr,*rptr;
 static PyObject * mpi_finalize(PyObject *self, PyObject *args) {
 /* int MPI_Finalize() */
 	if(erroron){ erroron=0; return NULL;}
-    return PyInt_FromLong((long)MPI_Finalize());
+    return PyLong_FromLong((long)MPI_Finalize());
 }
 static PyObject * mpi_alltoall(PyObject *self, PyObject *args) {
 /*
@@ -1721,7 +1721,7 @@ static PyObject * mpi_win_allocate_shared(PyObject *self, PyObject *args) {
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 /*
 	MPI_Init(&argc, &argv);
@@ -1783,7 +1783,7 @@ static PyObject * mpi_win_shared_query(PyObject *self, PyObject *args) {
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 
 	//NUMPY 1.13 change PyArrayObject *result;
@@ -1816,7 +1816,7 @@ static PyObject * mpi_win_free(PyObject *self, PyObject *args) {
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 
 	MPI_Win win;
@@ -2246,7 +2246,7 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 
 	size_t i, kt, j, nit, k;
@@ -2718,12 +2718,12 @@ ierr = MPI_Barrier(comm);
 	//NUMPY 1.13 change PyArrayObject *result;
 	PyObject *result;
 	result = PyTuple_New(1);
-	PyTuple_SetItem(result,0,PyString_FromString("1111"));
+	PyTuple_SetItem(result,0,PyUnicode_FromString("1111"));
 	
 	// sprintf(debug_message, "MRK_DEBUG: mpi_iterefa() is successfully returning! \n"); if( myid == 0 ) { perror(debug_message); }
 	
 	return result;
-//	return PyInt_FromLong((long)ierr);
+//	return PyLong_FromLong((long)ierr);
 }
 
 #undef MAX
@@ -2738,7 +2738,7 @@ static PyObject *mpi_comm_split_type(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 	int color,key;
 	COM_TYPE  incomm,outcomm;
@@ -2766,7 +2766,7 @@ static PyObject * pydusa_version(PyObject *self, PyObject *args) {
 		cw[i] = (char) 0;
 	}
 	sprintf(cw, "\n%s\nCompile time: %s  %s\n",STRINGIZE_VALUE_OF(PYDUSA_VERSION), __DATE__, __TIME__);
-	return PyString_FromString(cw);
+	return PyUnicode_FromString(cw);
 }
 
 
@@ -2802,7 +2802,7 @@ strncat(cw,"	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF\n",80);
 strncat(cw,"	MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE\n",80);
 strncat(cw,"	USE OF THIS SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK OR\n",80);
 strncat(cw,"	OTHER RIGHTS.\n",80);
-return PyString_FromString(cw);
+return PyUnicode_FromString(cw);
 }
 /*
 **** to add ****
@@ -2883,30 +2883,42 @@ static PyMethodDef mpiMethods[] = {
 /*
 */
 
-PyMODINIT_FUNC initmpi(void)
+static struct PyModuleDef mpiModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "mpi",
+        NULL,
+        -1,
+        mpiMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC PyInit_mpi(void)
 {
 #ifdef DO_UNSIGED
 #define CAST unsigned long
 #define VERT_FUNC PyLong_FromUnsignedLong
 #else
 #define CAST long
-#define VERT_FUNC PyInt_FromLong
+#define VERT_FUNC PyLong_FromLong
 #endif
 	PyObject *m, *d;
     PyObject *tmp;
 	import_array();
-	m=Py_InitModule("mpi", mpiMethods);
+	m=PyModule_Create(&mpiModuleDef);
 	mpiError = PyErr_NewException("mpi.error", NULL, NULL);
     Py_INCREF(mpiError);
     PyModule_AddObject(m, "error", mpiError);
     d = PyModule_GetDict(m);
-    tmp = PyString_FromString(VERSION);
+    tmp = PyUnicode_FromString(VERSION);
     PyDict_SetItemString(d,   "VERSION", tmp);  Py_DECREF(tmp);
-    tmp = PyInt_FromLong((long)MPI_VERSION);
+    tmp = PyLong_FromLong((long)MPI_VERSION);
     PyDict_SetItemString(d,   "MPI_VERSION", tmp);  Py_DECREF(tmp);
-    tmp = PyInt_FromLong((long)MPI_SUBVERSION);
+    tmp = PyLong_FromLong((long)MPI_SUBVERSION);
     PyDict_SetItemString(d,   "MPI_SUBVERSION", tmp);  Py_DECREF(tmp);
-    tmp = PyString_FromString(COPYWRITE);
+    tmp = PyUnicode_FromString(COPYWRITE);
     PyDict_SetItemString(d,   "COPYWRITE", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_CHAR);
     PyDict_SetItemString(d,   "MPI_CHAR", tmp);  Py_DECREF(tmp);
@@ -2998,7 +3010,7 @@ PyMODINIT_FUNC initmpi(void)
     PyDict_SetItemString(d,   "MPI_MAX_PROCESSOR_NAME", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_MAX_ERROR_STRING);
     PyDict_SetItemString(d,   "MPI_MAX_ERROR_STRING", tmp);  Py_DECREF(tmp);
-	tmp = PyInt_FromLong((long)MPI_UNDEFINED);
+	tmp = PyLong_FromLong((long)MPI_UNDEFINED);
     PyDict_SetItemString(d,   "MPI_UNDEFINED", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_KEYVAL_INVALID);
     PyDict_SetItemString(d,   "MPI_KEYVAL_INVALID", tmp);  Py_DECREF(tmp);
@@ -3023,12 +3035,12 @@ PyMODINIT_FUNC initmpi(void)
     tmp = VERT_FUNC((CAST)MPI_WTIME_IS_GLOBAL);
     PyDict_SetItemString(d,   "MPI_WTIME_IS_GLOBAL", tmp);  Py_DECREF(tmp);
 
-    tmp = PyString_FromString(LIBRARY);
+    tmp = PyUnicode_FromString(LIBRARY);
     PyDict_SetItemString(d,   "ARRAY_LIBRARY", tmp);  Py_DECREF(tmp);
 
-    tmp = PyString_FromString(DATE_DOC);
+    tmp = PyUnicode_FromString(DATE_DOC);
     PyDict_SetItemString(d,   "DATE_DOC", tmp);  Py_DECREF(tmp);
-    tmp = PyString_FromString(DATE_SRC);
+    tmp = PyUnicode_FromString(DATE_SRC);
     PyDict_SetItemString(d,   "DATE_SRC", tmp);  Py_DECREF(tmp);
 
 #ifdef MPI2
@@ -3046,6 +3058,7 @@ PyMODINIT_FUNC initmpi(void)
 
 
 
+return m;
 
 
 }
