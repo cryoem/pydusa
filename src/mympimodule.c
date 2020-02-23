@@ -447,10 +447,25 @@ COM_TYPE comm;
 PyObject *input;
 PyArrayObject *array;
 char *aptr;
+Py_ssize_t ln=0;
 
 	if (!PyArg_ParseTuple(args, "Oiliil", &input, &count,&datatype,&dest,&tag,&comm))
         return NULL;
-	array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
+	if (PyBytes_Check(input)) {
+//		printf("b %d %d\n",count,tag);
+		PyBytes_AsStringAndSize(input,&aptr,&ln);
+//		if (ln!=count) printf("ln %d ct %d\n",ln,count);
+		ierr=MPI_Send(aptr,  ln,  (MPI_Datatype)datatype,  dest,  tag,  (MPI_Comm)comm );
+		return PyLong_FromLong((long)ierr);
+	}
+	else {
+//		printf("object\n");
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
+		aptr=(char*)(array->data);
+		ierr=MPI_Send(aptr,  count,  (MPI_Datatype)datatype,  dest,  tag,  (MPI_Comm)comm );
+		Py_DECREF(array);
+		return PyLong_FromLong((long)ierr);
+	}
 	if (array == NULL)
 		return NULL;
 /*
@@ -461,10 +476,6 @@ char *aptr;
 	if (n < count)
 		return NULL;
 */
-	aptr=(char*)(array->data);
-    ierr=MPI_Send(aptr,  count,  (MPI_Datatype)datatype,  dest,  tag,  (MPI_Comm)comm );
-    Py_DECREF(array);
-	return PyLong_FromLong((long)ierr);
 }
 
 
@@ -673,7 +684,7 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 	}
 
 	if(strncmp("list",input->ob_type->tp_name,4)==0){
-		printf("is list\n");
+//		printf("is list\n");
 		argv=(char**)malloc((maxprocs+2)*sizeof(char*));
 		if (argv == NULL) {
 			sprintf(error_message, "SX_BAD_ALLOC: In mpi_comm_spawn(), malloc() failed to allocate %d bytes to pointer argv.\n", (maxprocs+2)*sizeof(char*));
@@ -694,7 +705,7 @@ if (!PyArg_ParseTuple(args, "sOilii", &command,&input,&maxprocs,&info,&root,&com
 				}
 				argv[i][len]=(char)0;
 				strncpy(argv[i],PyUnicode_AsUTF8(PyList_GetItem(input,i)),(size_t)len);
-				printf("%s\n",argv[i]);
+//				printf("%s\n",argv[i]);
 			}
 		}
 	}
@@ -1143,10 +1154,13 @@ PyArrayObject *array;
 PyObject *input;
 int dimensions[1];
 char *aptr;
+Py_ssize_t ln=0;
 
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
         return NULL;
-    dimensions[0]=count;
+
+
+	dimensions[0]=count;
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
@@ -1155,6 +1169,13 @@ char *aptr;
 #else
     if(myid == root) {
 #endif
+		if (PyBytes_Check(input)) {
+//			printf("bc %d %d\n",count,datatype);
+			PyBytes_AsStringAndSize(input,&aptr,&ln);
+//			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
+			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
+			return PyLong_FromLong((long)ierr);
+		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
 		if (array == NULL)
 			return NULL;
@@ -2775,6 +2796,7 @@ int i;
 for(i=0;i<2160;i++) {
 	cw[i]=(char)0;
 }
+strncat(cw,"--------------------------------------------------------------\n",80);
 strncat(cw,"Copyright (c) 2005 The Regents of the University of California\n",80);
 strncat(cw,"All Rights Reserved\n",80);
 strncat(cw,"Permission to use, copy, modify and distribute any part of this\n",80);

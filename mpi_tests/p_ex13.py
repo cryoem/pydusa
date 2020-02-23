@@ -1,4 +1,4 @@
-#!/usr/bin/env /usr/bin/python
+#!/usr/bin/env /home2/stevel/miniconda3/envs/e3/bin/python
 #
 # This program shows how to use MPI_scatterv.  Each processor gets a
 # different amount of data from the root processor.  We use MPI_Gather

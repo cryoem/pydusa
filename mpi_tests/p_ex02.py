@@ -1,4 +1,4 @@
-#!/usr/bin/env /usr/bin/python
+#!/usr/bin/env /home2/stevel/miniconda3/envs/e3/bin/python
 # Program shows how to use probe and get_count to find the size
 # of an incomming message
 import Numeric
