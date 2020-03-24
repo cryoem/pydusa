@@ -248,7 +248,7 @@ int getptype(long mpitype) {
 	if(mpitype == (long)MPI_DOUBLE) return(PyArray_DOUBLE);
 	if(mpitype == (long)MPI_CHAR)   return(PyArray_CHAR);  /* Added in version for sparx */
 	if(mpitype == (long)MPI_BYTE)   return (PyArray_BYTE);
-	printf("could not find type input: %ld  available: MPI_FLOAT %ld MPI_INT %ld MPI_DOUBLE %ld MPI_CHAR %ld\n",mpitype,(long)MPI_FLOAT,(long)MPI_INT,(long)MPI_DOUBLE,(long)MPI_CHAR , (long)MPI_BYTE);
+	printf("could not find type input: %ld  available: MPI_FLOAT %ld MPI_INT %ld MPI_DOUBLE %ld MPI_CHAR %ld MPI_BYTE %ld\n",mpitype,(long)MPI_FLOAT,(long)MPI_INT,(long)MPI_DOUBLE,(long)MPI_CHAR , (long)MPI_BYTE);
 	return(PyArray_INT);
 }
 
