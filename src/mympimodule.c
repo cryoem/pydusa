@@ -1165,7 +1165,8 @@ PyObject *input;
 int dimensions[1];
 char *aptr;
 Py_ssize_t ln=0;
-
+	printf("Adnan version of pydusa is used");
+	sprint("Test Adnan version is used");
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
         return NULL;
 
@@ -2936,8 +2937,7 @@ PyMODINIT_FUNC PyInit_mpi(void)
 #define CAST long
 #define VERT_FUNC PyLong_FromLong
 #endif
-	printf("Adnan version of pydusa is used");
-	sprint("Test Adnan version is used");
+
 	PyObject *m, *d;
     PyObject *tmp;
 	import_array();
