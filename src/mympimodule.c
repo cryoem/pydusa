@@ -1173,7 +1173,7 @@ Py_ssize_t ln=0;
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
     printf("result is %d", result->data);
 	aptr=(char*)(result->data);
-	printf("aptr values is %d" *aptr);
+	printf("aptr values is %d" (void*)aptr);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 #ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
