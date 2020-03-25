@@ -243,6 +243,7 @@ int c_len;
 }
 
 int getptype(long mpitype) {
+	printf("Hello");
     if(mpitype == (long)MPI_INT)    return(PyArray_INT);
     if(mpitype == (long)MPI_FLOAT)  return(PyArray_FLOAT);
     if(mpitype == (long)MPI_DOUBLE) return(PyArray_DOUBLE);
@@ -1163,7 +1164,8 @@ Py_ssize_t ln=0;
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
         return NULL;
 
-
+	printf("mpi_bcast is called");
+	sprintf
 	dimensions[0]=count;
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
