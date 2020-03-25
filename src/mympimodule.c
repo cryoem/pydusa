@@ -83,6 +83,7 @@ char REV_SRC[]="$Revision$";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream.h>
 // Toshio Moriya 2018/04/25
 // Now let's use C way of error handling! (Toshio 2018/04/25)
 #include <errno.h>  // errno; 
@@ -122,6 +123,11 @@ MPI_Errhandler newerr;
 // 	public:
 // 		MRKNotImplemented() : std::logic_error("MRK_DEBUG: Function not yet implemented") { };
 // };
+
+using namespace std;
+printf("Adnan version of pydusa is used");
+cout<<"check if Adnan version of pydusa is used";
+
 
 #ifdef DEBUG
 static FILE *debug;
