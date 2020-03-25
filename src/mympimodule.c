@@ -1165,15 +1165,13 @@ PyObject *input;
 int dimensions[1];
 char *aptr;
 Py_ssize_t ln=0;
-	printf("Adnan version of pydusa is used");
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
-	{
-		printf("It is going to return NULL value");
-        return NULL;  }
+        return NULL;
 
 	printf("mpi_bcast is called");
 	dimensions[0]=count;
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    printf("result is %d", result);
 	aptr=(char*)(result->data);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 #ifdef MPI2
