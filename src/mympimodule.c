@@ -1166,7 +1166,6 @@ int dimensions[1];
 char *aptr;
 Py_ssize_t ln=0;
 	printf("Adnan version of pydusa is used");
-	print("Data type is ", )
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
 		printf("It is going to return NULL value");
         return NULL;
