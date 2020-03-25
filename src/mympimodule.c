@@ -1165,7 +1165,6 @@ Py_ssize_t ln=0;
         return NULL;
 
 	printf("mpi_bcast is called");
-	sprintf
 	dimensions[0]=count;
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
