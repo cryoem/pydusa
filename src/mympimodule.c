@@ -125,8 +125,7 @@ MPI_Errhandler newerr;
 // };
 
 
-printf("Adnan version of pydusa is used");
-sprint("Test Adnan version is used");
+
 
 
 #ifdef DEBUG
@@ -2937,6 +2936,8 @@ PyMODINIT_FUNC PyInit_mpi(void)
 #define CAST long
 #define VERT_FUNC PyLong_FromLong
 #endif
+	printf("Adnan version of pydusa is used");
+	sprint("Test Adnan version is used");
 	PyObject *m, *d;
     PyObject *tmp;
 	import_array();
