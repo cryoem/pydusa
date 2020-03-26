@@ -1168,13 +1168,13 @@ Py_ssize_t ln=0;
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
         return NULL;
 
-	printf("mpi_bcast is called");
+	printf("mpi_bcast is called\n");
 	dimensions[0]=count;
-	printf("count value %d", count);
+	printf("count value %d\n", count);
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
-    printf("result is %i", *result->data);
+    printf("result is %i\n", *result->data);
 	aptr=(char*)(result->data);
-	printf("aptr values is %i" ,  *aptr);
+	printf("aptr values is %i\n" ,  *aptr);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 #ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
@@ -1183,7 +1183,9 @@ Py_ssize_t ln=0;
 #endif
 		if (PyBytes_Check(input)) {
 //			printf("bc %d %d\n",count,datatype);
+			printf("bc %d %d\n",count,datatype);
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
+			printf("lnc %d ct %d\n",ln,count);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
 			return PyLong_FromLong((long)ierr);
