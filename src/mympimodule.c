@@ -1176,6 +1176,7 @@ Py_ssize_t ln=0;
 	aptr=(char*)(result->data);
 	printf("aptr1 values is %i\n" ,  *aptr);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
+	printf("ieerr1 is %d", ierr);
 #ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
 #else
@@ -1188,20 +1189,22 @@ Py_ssize_t ln=0;
 			printf("lnc %d ct %d\n",ln,count);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
-			printf("ieerr1 is %d", ierr);
+			printf("aptr2 values is %i\n" ,  *aptr);
+			printf("ieerr2 is %d", ierr);
 			return PyLong_FromLong((long)ierr);
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
 		if (array == NULL)
 			return NULL;
 		ierr=MPI_Type_size((MPI_Datatype)datatype,&mysize);
+	    printf("ieerr3 is %d", ierr);
 		memcpy((void *)(result->data), (void*)array->data, (size_t) (mysize*count));
 		Py_DECREF(array);
 	}
 	ierr=MPI_Bcast(aptr,count,(MPI_Datatype)datatype,root,(MPI_Comm)comm);
 	printf("bc2 %d %d\n",count,(MPI_Datatype)datatype);
-	printf("aptr2 values is %i\n" ,  *aptr);
-	printf("ieerr2 is %d", ierr);
+	printf("aptr3 values is %i\n" ,  *aptr);
+	printf("ieerr4 is %d", ierr);
 #ifdef DEBUG
 	if(count >0)
 		printf("result2 is %i\n", *result->data);
