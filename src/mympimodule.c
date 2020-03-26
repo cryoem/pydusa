@@ -1183,7 +1183,7 @@ Py_ssize_t ln=0;
 #endif
 		if (PyBytes_Check(input)) {
 //			printf("bc %d %d\n",count,datatype);
-			printf("bc %d %d\n",count,datatype);
+			printf("bc %d %d\n",count,(MPI_Datatype)datatype);
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
 			printf("lnc %d ct %d\n",ln,count);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
