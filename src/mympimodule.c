@@ -1195,7 +1195,7 @@ Py_ssize_t ln=0;
 			return PyLong_FromLong((long)ierr);
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
-		print("array1 is %i \n" , array->data);
+		printf("array1 is %i \n" , array->data);
 		if (array == NULL)
 			return NULL;
 		ierr=MPI_Type_size((MPI_Datatype)datatype,&mysize);
