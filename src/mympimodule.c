@@ -1177,7 +1177,7 @@ Py_ssize_t ln=0;
 	printf("aptr1 values is %i\n" ,  *aptr);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 	printf("ieerr1 is %d", ierr);
-	printf("myid  %d  and my root  %d ", myid, root)
+	printf("myid  %d  and my root  %d  ", myid, root);
 #ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
 #else
