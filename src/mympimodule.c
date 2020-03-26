@@ -255,7 +255,7 @@ int getptype(long mpitype) {
     if(mpitype == (long)MPI_CHAR)   return(PyArray_CHAR);
     if(mpitype == (long)MPI_BYTE) {
     	printf("datatype is MPI_BYTE");
-    	return(PyArray_BYTES);/* Added in version for sparx */}
+    	return(PyArray_BYTE);/* Added in version for sparx */}
     printf("could not find type input: %ld  available: MPI_FLOAT %ld MPI_INT %ld MPI_DOUBLE %ld MPI_CHAR %ld MPI_BYTE %ld\n",mpitype,(long)MPI_FLOAT,(long)MPI_INT,(long)MPI_DOUBLE,(long)MPI_CHAR,(long)MPI_BYTE);
 	printf("This is the place to print out %ld", (long)MPI_BYTE);
 	return(PyArray_INT);
@@ -1188,6 +1188,7 @@ Py_ssize_t ln=0;
 			printf("lnc %d ct %d\n",ln,count);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
+			printf("ieerr is %d", ierr);
 			return PyLong_FromLong((long)ierr);
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
@@ -1198,6 +1199,7 @@ Py_ssize_t ln=0;
 		Py_DECREF(array);
 	}
 	ierr=MPI_Bcast(aptr,count,(MPI_Datatype)datatype,root,(MPI_Comm)comm);
+ 
 #ifdef DEBUG
 	if(count >0)
 		writeit(result,count,(MPI_Datatype)datatype,"bcast");
