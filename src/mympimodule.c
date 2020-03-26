@@ -1183,18 +1183,18 @@ Py_ssize_t ln=0;
 #else
     if(myid == root) {
 #endif
-//		if (PyBytes_Check(input)) {
-////			printf("bc %d %d\n",count,datatype);
-//			printf("bc1 %d %lld\n",count,(MPI_Datatype)datatype);
-//			PyBytes_AsStringAndSize(input,&aptr,&ln);
-//			printf("input value %lld\n", input );
-//			printf("lnc %d ct %d\n",ln,count);
-////			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
-//			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
-//			printf("aptr2 values is %i\n" ,  *aptr);
-//			printf("ieerr2 is %d\n", ierr);
-//			return PyLong_FromLong((long)ierr);
-//		}
+		if (PyBytes_Check(input)) {
+//			printf("bc %d %d\n",count,datatype);
+			printf("bc1 %d %lld\n",count,(MPI_Datatype)datatype);
+			PyBytes_AsStringAndSize(input,&aptr,&ln);
+			printf("input value %lld\n", input );
+			printf("lnc %d ct %d\n",ln,count);
+//			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
+			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
+			printf("aptr2 values is %i\n" ,  *aptr);
+			printf("ieerr2 is %d\n", ierr);
+			return PyLong_FromLong((long)ierr);
+		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
 		printf("array1 is %i \n" , array->data);
 		if (array == NULL)
