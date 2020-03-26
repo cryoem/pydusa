@@ -1172,9 +1172,9 @@ Py_ssize_t ln=0;
 	dimensions[0]=count;
 	printf("count value %d\n", count);
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
-    printf("result is %i\n", *result->data);
+    printf("result1 is %i\n", *result->data);
 	aptr=(char*)(result->data);
-	printf("aptr values is %i\n" ,  *aptr);
+	printf("aptr1 values is %i\n" ,  *aptr);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 #ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
@@ -1183,12 +1183,12 @@ Py_ssize_t ln=0;
 #endif
 		if (PyBytes_Check(input)) {
 //			printf("bc %d %d\n",count,datatype);
-			printf("bc %d %d\n",count,(MPI_Datatype)datatype);
+			printf("bc1 %d %d\n",count,(MPI_Datatype)datatype);
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
 			printf("lnc %d ct %d\n",ln,count);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
-			printf("ieerr is %d", ierr);
+			printf("ieerr1 is %d", ierr);
 			return PyLong_FromLong((long)ierr);
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
@@ -1199,9 +1199,13 @@ Py_ssize_t ln=0;
 		Py_DECREF(array);
 	}
 	ierr=MPI_Bcast(aptr,count,(MPI_Datatype)datatype,root,(MPI_Comm)comm);
- 
+	printf("bc2 %d %d\n",count,(MPI_Datatype)datatype);
+	printf("aptr2 values is %i\n" ,  *aptr);
+	printf("ieerr2 is %d", ierr);
 #ifdef DEBUG
 	if(count >0)
+		printf("result2 is %i\n", *result->data);
+		printf("bc3 %d %d\n",count,(MPI_Datatype)datatype);
 		writeit(result,count,(MPI_Datatype)datatype,"bcast");
 	else
 		dummy("bcast");
