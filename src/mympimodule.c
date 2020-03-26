@@ -1187,6 +1187,7 @@ Py_ssize_t ln=0;
 //			printf("bc %d %d\n",count,datatype);
 			printf("bc1 %d %d\n",count,(MPI_Datatype)datatype);
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
+			printf("input value %d", input );
 			printf("lnc %d ct %d\n",ln,count);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
