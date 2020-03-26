@@ -1172,7 +1172,7 @@ Py_ssize_t ln=0;
 	dimensions[0]=count;
 	printf("count value %d\n", count);
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
-    printf("result1 is %i\n", *result->data);
+    printf("result1 is %lld\n", *result->data);
 	aptr=(char*)(result->data);
 	printf("aptr1 values is %i\n" ,  *aptr);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
@@ -1210,7 +1210,7 @@ Py_ssize_t ln=0;
 	printf("ieerr4 is %d\n", ierr);
 #ifdef DEBUG
 	if(count >0)
-		printf("result2 is %i\n", *result->data);
+		printf("result2 is %lld\n", *result->data);
 		printf("bc3 %d %lld\n",count,(MPI_Datatype)datatype);
 		writeit(result,count,(MPI_Datatype)datatype,"bcast");
 	else
