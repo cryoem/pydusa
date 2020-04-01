@@ -1175,7 +1175,7 @@ Py_ssize_t ln=0;
 		if (PyBytes_Check(input)) {
 //			printf("bc %d %d\n",count,datatype);
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
-			count  = ln
+			count  = ln;
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 //			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
 //			return PyLong_FromLong((long)ierr);
