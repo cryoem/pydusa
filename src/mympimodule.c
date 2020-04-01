@@ -1151,6 +1151,7 @@ int myid;
 int mysize;
 PyArrayObject *result;
 PyArrayObject *array;
+PyArrayObject *array1;
 PyObject *input;
 int dimensions[1];
 char *aptr;
