@@ -1177,9 +1177,13 @@ Py_ssize_t ln=0;
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
+
 //			return inp;
 			array1 = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
-			return PyArray_Return(array1);
+			ierr=MPI_Type_size((MPI_Datatype)datatype,&mysize);
+			memcpy((void *)(result->data), (void*)array1->data, (size_t) (mysize*count));
+			Py_DECREF(array1);
+			return PyArray_Return(result);
 			
 //			return PyLong_FromLong((long)ierr);
 		}
