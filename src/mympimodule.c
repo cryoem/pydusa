@@ -1152,7 +1152,7 @@ int mysize;
 PyArrayObject *result;
 PyArrayObject *array;
 PyObject *input;
-PyObject * newpoin
+PyObject * newpoin;
 
 
 int dimensions[1];
@@ -1179,7 +1179,7 @@ Py_ssize_t ln=0;
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
 //			return result->data;
 			printf("result is %ld", result->data);
-			newpoin = &input
+			newpoin = &input;
 			return (void *)(newpoin);
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
