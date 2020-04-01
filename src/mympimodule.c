@@ -1175,7 +1175,7 @@ Py_ssize_t ln=0;
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
 			array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
-			return PyArray_Return(array)
+			return PyArray_Return(array);
 //			return PyLong_FromLong((long)ierr);
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
