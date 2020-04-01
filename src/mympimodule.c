@@ -1152,8 +1152,6 @@ int mysize;
 PyArrayObject *result;
 PyArrayObject *array;
 PyObject *input;
-PyObject * newpoin;
-
 
 int dimensions[1];
 char *aptr;
@@ -1161,8 +1159,7 @@ Py_ssize_t ln=0;
 
 	if (!PyArg_ParseTuple(args, "Oilil", &input, &count,&datatype,&root,&comm))
         return NULL;
-
-
+	
 	dimensions[0]=count;
     result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
@@ -1177,10 +1174,7 @@ Py_ssize_t ln=0;
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
 //			if (ln!=count) printf("lnc %d ct %d\n",ln,count);
 			ierr=MPI_Bcast(aptr, ln, (MPI_Datatype)datatype, root, (MPI_Comm)comm);
-//			return result->data;
-			printf("result is %ld", result->data);
-			newpoin = &input;
-			return (void *)(newpoin);
+			return &input;
 		}
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
 		if (array == NULL)
