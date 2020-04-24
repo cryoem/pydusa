@@ -2326,7 +2326,7 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 	// 	perror(debug_message);
 	// }
 	
-	char* dli_fname_correct_dir = mrk_replace_substr(finfo.dli_fname, "python2.7/site-packages/", "");  // remove "python2.7/site-packages/" from directory path
+	char* dli_fname_correct_dir = mrk_replace_substr(finfo.dli_fname, "python3.7/site-packages/", "");  // remove "python2.7/site-packages/" from directory path
 	char* fftw3_lib_dirname = mrk_dirname(dli_fname_correct_dir);
 	char* mpi_lib_basename = mrk_basename(dli_fname_correct_dir);
 	// if( myid == 0 ) {
