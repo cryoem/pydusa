@@ -1,4 +1,4 @@
-#!/usr/bin/env /home2/stevel/miniconda3/envs/e3/bin/python
+#!/usr/bin/env /usr/bin/python
 #
 # This program shows how to use mpi_comm_split
 #

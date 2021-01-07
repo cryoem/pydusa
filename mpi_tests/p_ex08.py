@@ -1,4 +1,4 @@
-#!/usr/bin/env /home2/stevel/miniconda3/envs/e3/bin/python
+#!/usr/bin/env /usr/bin/python
 #
 # This program shows how to use MPI_Gatherv.  Each processor sends a
 # different amount of data to the root processor.  We use MPI_Gather
