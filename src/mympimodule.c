@@ -2979,10 +2979,6 @@ PyMODINIT_FUNC PyInit_mpi(void)
     PyDict_SetItemString(d,   "MPI_Pack", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_Unpack);
     PyDict_SetItemString(d,   "MPI_Unpack", tmp);  Py_DECREF(tmp);
-    tmp = VERT_FUNC((CAST)MPI_UB);
-    PyDict_SetItemString(d,   "MPI_UB", tmp);  Py_DECREF(tmp);
-    tmp = VERT_FUNC((CAST)MPI_LB);
-    PyDict_SetItemString(d,   "MPI_LB", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_MAX);
     PyDict_SetItemString(d,   "MPI_MAX", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_MIN);
