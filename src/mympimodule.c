@@ -87,7 +87,7 @@ char REV_SRC[]="$Revision$";
 // Now let's use C way of error handling! (Toshio 2018/04/25)
 #include <errno.h>  // errno; 
 // Toshio Moriya 2018/04/25
-// We must programatically liking the fftw3 related libraries 
+// We must programmatically link the fftw3 related libraries 
 // to solve the DLL hell of fftw functions between fftw3 and NumPy libraries...
 #include <dlfcn.h>  // Dl_info, dladdr, dlerror, dlopen, dlsym
 
@@ -113,15 +113,6 @@ static MPI_Comm mycomm;
 */
 MPI_Errhandler newerr;
 
-// // Toshio Moriya 2018/04/25
-// // Create exception class for not implemented functions
-// // #include <new>          // std::bad_alloc
-// // #include <exception>    // std::logic_error
-// class MRKNotImplemented : public std::logic_error
-// {
-// 	public:
-// 		MRKNotImplemented() : std::logic_error("MRK_DEBUG: Function not yet implemented") { };
-// };
 
 #ifdef DEBUG
 static FILE *debug;
