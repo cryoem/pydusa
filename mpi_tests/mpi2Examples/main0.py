@@ -1,4 +1,4 @@
-#!/usr/bin/env /home2/stevel/miniconda3/envs/e3/bin/python
+#!/usr/bin/env /usr/bin/python
 import numpy
 from numpy import *
 import mpi
