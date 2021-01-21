@@ -2317,7 +2317,9 @@ static PyObject * mpi_iterefa(PyObject *self, PyObject *args) {
 	// 	perror(debug_message);
 	// }
 	
-	char* dli_fname_correct_dir = mrk_replace_substr(finfo.dli_fname, "python3.7/site-packages/", "");  // remove "python2.7/site-packages/" from directory path
+	char py_path_to_remove[50];
+	sprintf(py_path_to_remove, "python%d.%d/site-packages/", PY_MAJOR_VERSION, PY_MINOR_VERSION);
+	char* dli_fname_correct_dir = mrk_replace_substr(finfo.dli_fname, py_path_to_remove, "");  // remove "pythonX.X/site-packages/" from directory path
 	char* fftw3_lib_dirname = mrk_dirname(dli_fname_correct_dir);
 	char* mpi_lib_basename = mrk_basename(dli_fname_correct_dir);
 	// if( myid == 0 ) {
