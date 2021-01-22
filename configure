@@ -2197,7 +2197,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=MYMPI
- VERSION=1.15
+ VERSION=2.0
 
 
 cat >>confdefs.h <<_ACEOF
