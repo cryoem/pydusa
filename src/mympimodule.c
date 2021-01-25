@@ -49,7 +49,7 @@ THE SOFTWARE PROVIDED HEREIN IS ON AN AS IS BASIS, AND THE
 char DATE_SRC[]="$Date$";
 char URL_SRC[]="$HeadURL$";
 char REV_SRC[]="$Revision$";
-#define VERSION "2.0.0"
+#define VERSION "2.1.0"
 #define COPYWRITE "Copyright (c) 2005 The Regents of the University of California All Rights Reserved.  print mpi.copywrite() for details."
 #undef DO_UNSIGED
 #define DATA_TYPE long
