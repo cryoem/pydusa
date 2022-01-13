@@ -42,10 +42,6 @@ char REV_SRC[]="$Revision$";
 #include <Python.h>
 #include "documentation.h"
 
-#ifdef DOSLU
-#include "solvers.h"
-#endif
-
 #include <numpy/arrayobject.h>
 
 #include <sys/types.h>
@@ -2608,11 +2604,6 @@ static PyMethodDef mpiMethods[] = {
     {"mpi_wtime",		mpi_wtime,			METH_VARARGS,     	 mpi_wtime__},
     {"mpi_wtick",		mpi_wtick,			METH_VARARGS,     	 mpi_wtick__},
     {"mpi_attr_get",	mpi_attr_get,		METH_VARARGS,     	 mpi_attr_get__},
-#ifdef DOSLU
-    {"par_slu",	        par_slu,		    METH_VARARGS,     	 par_slu__},
-    {"boeingheader",    boeingheader,		    METH_VARARGS,     	 par_slu__},
-    {"boeingdata",      boeingdata,		    METH_VARARGS,     	 par_slu__},
-#endif
 
 
     {"mpi_comm_spawn",		    mpi_comm_spawn,			METH_VARARGS,     	 mpi_comm_spawn__},
@@ -2806,7 +2797,3 @@ void myerror(char *s) {
 	erroron=1;
 	PyErr_SetString(mpiError,s);
 }
-
-#ifdef DOSLU
-#include "./solvers.c"
-#endif
