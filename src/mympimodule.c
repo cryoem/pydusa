@@ -139,18 +139,6 @@ void dummy(char *routine) {
 
 #endif
 
-#ifdef MPI_VERSION
-#if (MPI_VERSION >= 2)
-#define MPI2
-#endif
-#else
-#define MPI_VERSION 1
-#endif
-
-#ifndef MPI_SUBVERSION
-#define MPI_SUBVERSION 0
-#endif
-
 char cw[2160];
 
 #define com_ray_size 20
@@ -158,10 +146,8 @@ MPI_Comm com_ray[com_ray_size];
 char errstr[256];
 char version[8];
 
-#ifdef MPI2
 int *array_of_errcodes=NULL;
 int array_of_errcodes_size=0;
-#endif
 
 MPI_Status status;
 int ierr;
@@ -172,14 +158,6 @@ int getptype(long mpitype);
 int erroron;
 
 static PyObject *mpiError;
-
-void eh( MPI_Comm *comm, int *err, ... )
-{
- ierr=*err;
- printf( "mpi generated the error %d\n",*err );fflush(stdout);
- return;
-}
-
 
 static PyObject *mpi_get_processor_name(PyObject *self, PyObject *args)
 {
@@ -310,16 +288,12 @@ int choice;
 	if (!PyArg_ParseTuple(args, "li", &tmpcomm,&choice))
         return NULL;
     incomm=(COM_TYPE)tmpcomm;
-#ifdef MPI2
     if(choice == 0)
 		ierr= MPI_Comm_set_errhandler( (MPI_Comm)incomm, MPI_ERRORS_ARE_FATAL );
     if(choice == 1)
 		ierr= MPI_Comm_set_errhandler( (MPI_Comm)incomm, MPI_ERRORS_RETURN );
     if(choice == 2)
 		ierr= MPI_Comm_set_errhandler( (MPI_Comm)incomm, newerr );
-#else
-    printf("mpi_comm_set_errhandler not supported on this platform\n");
-#endif
 
 	return PyLong_FromLong((long)ierr);
 }
@@ -774,8 +748,6 @@ COM_TYPE  comm;
 	return VERT_FUNC((CAST)ierr);
 }
 
-#endif
-
 static PyObject *mpi_comm_split(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_split ( MPI_Comm comm, int color, int key, MPI_Comm *comm_out ) */
@@ -914,10 +886,6 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 	fprintf(debug,"%s\n",pname);
 #endif
 
-#ifdef MPI2
-		MPI_Comm_create_errhandler( eh, &newerr );
-#endif
-
 /*		free(argv); */
 	}
 
@@ -1031,9 +999,6 @@ static PyObject * mpi_start(PyObject *self, PyObject *args) {
 	debug=fopen(fname,"w");
 	fprintf(debug,"%s\n",pname);
 #endif
-#ifdef MPI2
-		MPI_Comm_create_errhandler( eh, &newerr );
-#endif
 
 
 	dimensions[0]=2;
@@ -1071,11 +1036,7 @@ Py_ssize_t ln=0;
     result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
 		if (PyBytes_Check(input)) {
 //			printf("bc %d %d\n",count,datatype);
 			PyBytes_AsStringAndSize(input,&aptr,&ln);
@@ -1129,11 +1090,7 @@ char error_message[1024];
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 
 
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
@@ -1166,11 +1123,7 @@ char error_message[1024];
 
 	ierr=MPI_Scatterv(sptr, sendcnts, displs, (MPI_Datatype)sendtype,rptr,recvcnt,(MPI_Datatype)recvtype, root, (MPI_Comm )comm );
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
 		Py_DECREF(array);
 		free(sendcnts);
 		free(displs);
@@ -1214,11 +1167,7 @@ char error_message[1024];
     rtot=0;
     recvcnts=0;
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
     /* printf("  get the recv_counts array \n"); */
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
@@ -1259,11 +1208,7 @@ char error_message[1024];
    /* printf("   do the call %d \n",recvcnt); */
 	ierr=MPI_Gatherv(sptr, sendcnt, (MPI_Datatype)sendtype,rptr,recvcnts,displs,(MPI_Datatype)recvtype, root, (MPI_Comm )comm );
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
 		free(recvcnts);
 		free(displs);
 	}
@@ -1310,11 +1255,7 @@ npy_intp dimensions[1];
 		return NULL;
 	sptr=array->data;
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
 		rtot=recvcnt*numprocs;
     }
 	/* printf("  allocate the recvbuf \n"); */
@@ -1365,11 +1306,7 @@ char *sptr,*rptr;
     ierr=MPI_Comm_size((MPI_Comm)comm,&numprocs);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
     /* get sendbuf */
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendbuf_obj, getptype(sendtype), 1, 3);
 		if (array == NULL)
@@ -1386,11 +1323,7 @@ char *sptr,*rptr;
    /*  do the call */
 	ierr=MPI_Scatter(sptr, sendcnts, (MPI_Datatype)sendtype,rptr,recvcnt,(MPI_Datatype)recvtype, root, (MPI_Comm )comm );
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
 		Py_DECREF(array);
 	}
 #ifdef DEBUG
@@ -1419,11 +1352,7 @@ char *sptr,*rptr;
         return NULL;
     MPI_Comm_rank((MPI_Comm)comm,&myid);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
-#ifdef MPI2
     if(myid == root || root == MPI_ROOT) {
-#else
-    if(myid == root) {
-#endif
     	dimensions[0]=count;
 	}
 	else {
@@ -2686,7 +2615,6 @@ static PyMethodDef mpiMethods[] = {
 #endif
 
 
-#ifdef MPI2
     {"mpi_comm_spawn",		    mpi_comm_spawn,			METH_VARARGS,     	 mpi_comm_spawn__},
     {"mpi_array_of_errcodes",	mpi_array_of_errcodes,	METH_VARARGS,     	 mpi_array_of_errcodes__},
     {"mpi_comm_get_parent",		mpi_comm_get_parent,	METH_VARARGS,     	 mpi_comm_get_parent__},
@@ -2699,7 +2627,6 @@ static PyMethodDef mpiMethods[] = {
     {"mpi_comm_disconnect",		mpi_comm_disconnect,	METH_VARARGS,     	 mpi_comm_disconnect__},
     {"mpi_comm_set_errhandler",	mpi_comm_set_errhandler,METH_VARARGS,     	 mpi_comm_set_errhandler__},
 
-#endif
     {"copywrite",		copywrite,			METH_VARARGS,     	COPYWRITE_STR__},
     {"pydusa_version",		pydusa_version,			METH_VARARGS,     	pydusa_version__},
     {NULL, NULL, 0, NULL}        /* Sentinel */
@@ -2739,10 +2666,6 @@ PyMODINIT_FUNC PyInit_mpi(void)
     d = PyModule_GetDict(m);
     tmp = PyUnicode_FromString(VERSION);
     PyDict_SetItemString(d,   "VERSION", tmp);  Py_DECREF(tmp);
-    tmp = PyLong_FromLong((long)MPI_VERSION);
-    PyDict_SetItemString(d,   "MPI_VERSION", tmp);  Py_DECREF(tmp);
-    tmp = PyLong_FromLong((long)MPI_SUBVERSION);
-    PyDict_SetItemString(d,   "MPI_SUBVERSION", tmp);  Py_DECREF(tmp);
     tmp = PyUnicode_FromString(COPYWRITE);
     PyDict_SetItemString(d,   "COPYWRITE", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_CHAR);
@@ -2864,7 +2787,6 @@ PyMODINIT_FUNC PyInit_mpi(void)
     tmp = PyUnicode_FromString(DATE_SRC);
     PyDict_SetItemString(d,   "DATE_SRC", tmp);  Py_DECREF(tmp);
 
-#ifdef MPI2
     tmp = VERT_FUNC((CAST)MPI_UNIVERSE_SIZE);
     PyDict_SetItemString(d,   "MPI_UNIVERSE_SIZE", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_ROOT);
@@ -2875,7 +2797,6 @@ PyMODINIT_FUNC PyInit_mpi(void)
     PyDict_SetItemString(d,   "MPI_INFO_NULL", tmp);  Py_DECREF(tmp);
     tmp = VERT_FUNC((CAST)MPI_COMM_TYPE_SHARED);
     PyDict_SetItemString(d,   "MPI_COMM_TYPE_SHARED", tmp);  Py_DECREF(tmp);
-#endif
 
 
 return m;
