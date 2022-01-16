@@ -5313,30 +5313,6 @@ else
 fi
 
 
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex00.py.in > mpi_tests/p_ex00.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex01.py.in > mpi_tests/p_ex01.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex02.py.in > mpi_tests/p_ex02.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex04.py.in > mpi_tests/p_ex04.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex05.py.in > mpi_tests/p_ex05.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex05d.py.in > mpi_tests/p_ex05d.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex06.py.in > mpi_tests/p_ex06.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex07.py.in > mpi_tests/p_ex07.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex08.py.in > mpi_tests/p_ex08.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex09.py.in > mpi_tests/p_ex09.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex10.py.in > mpi_tests/p_ex10.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex12.py.in > mpi_tests/p_ex12.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex13.py.in > mpi_tests/p_ex13.py
-
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/main0.py.in > mpi_tests/mpi2Examples/main0.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/main1.py.in > mpi_tests/mpi2Examples/main1.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/tspawn.py.in > mpi_tests/mpi2Examples/tspawn.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/worker.py.in > mpi_tests/mpi2Examples/worker.py
-
-sed -e 's%@python@%'${py_path}'%' workit/workit.py.in > workit/workit.py
-
-chmod +x mpi_tests/*.py
-chmod +x mpi_tests/mpi2Examples/*.py
-chmod +x workit/*.py
 
 
 
