@@ -1,6 +1,0 @@
-# Sample mpiexec config file
--host localhost       p_ex00.py f_ex00.f f_ex01.f f_ex02.f f_ex03.f f_ex04.f f_ex05.f f_ex06.f f_ex07.f f_ex08.f f_ex09.f f_ex10.f f_ex11.f f_ex12.f f_ex13.f  xxxx xxxx xxxx xxxx xxxx x
--host localhost -np 1 f_ex00
--host localhost -np 1 c_ex00
--host localhost -np 1 p_ex00.py
-

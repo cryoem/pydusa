@@ -1,6 +1,0 @@
-# Sample mpiexec config file
--host localhost       p_ex07.py
--host localhost -np 1 f_ex07
--host localhost -np 1 p_ex07.py
-
-
