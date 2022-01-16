@@ -5350,7 +5350,7 @@ chmod +x workit/*.py
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile lib/Makefile mpi_tests/Makefile workit/Makefile check/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile lib/Makefile workit/Makefile check/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5954,7 +5954,6 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
-    "mpi_tests/Makefile") CONFIG_FILES="$CONFIG_FILES mpi_tests/Makefile" ;;
     "workit/Makefile") CONFIG_FILES="$CONFIG_FILES workit/Makefile" ;;
     "check/Makefile") CONFIG_FILES="$CONFIG_FILES check/Makefile" ;;
 
