@@ -547,7 +547,7 @@ Output Parameters
 /*        printf("mpi_attr_get:  keyval:%d\n",keyval); */
 
         /* get the keyval for the specified attribute */
-        ierr = MPI_Attr_get((MPI_Comm)comm, keyval, &attr_value,&flag);
+        ierr = MPI_Comm_get_attr((MPI_Comm)comm, keyval, &attr_value,&flag);
         if ( !flag ) {
                 return NULL;
         }
