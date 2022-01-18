@@ -477,7 +477,7 @@ int count,source,tag;
 DATA_TYPE datatype;
 COM_TYPE comm;
 PyArrayObject *result;
-int dimensions[1];
+npy_intp dimensions[1];
 char *aptr;
 
 	if (!PyArg_ParseTuple(args, "iliil", &count,&datatype,&source,&tag,&comm))
@@ -499,7 +499,7 @@ static PyObject *mpi_status(PyObject *self, PyObject *args)
 {
 /* int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status ) */
 PyArrayObject *result;
-int dimensions[1],statray[3];
+npy_intp dimensions[1],statray[3];
 
     dimensions[0]=3;
     result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
@@ -951,7 +951,7 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 #endif
 #ifdef SIZE_RANK
 	PyArrayObject *result;
-	int dimensions[1],data[2];
+	npy_intp dimensions[1],data[2];
 	char *aptr;
 #endif
 #ifdef ARG_ARRAY
@@ -1067,7 +1067,7 @@ for(i=0;i<argc;i++) {
 static PyObject * mpi_start(PyObject *self, PyObject *args) {
 	PyArrayObject *result;
 	int argc,did_it,i;
-	int dimensions[1],data[2];
+	npy_intp dimensions[1],data[2];
 	int numprocs,myid;
 	char *command,*aptr;
 	char **argv;
@@ -1143,7 +1143,7 @@ int mysize;
 PyArrayObject *result;
 PyArrayObject *array;
 PyObject *input;
-int dimensions[1];
+npy_intp dimensions[1];
 char *aptr;
 Py_ssize_t ln=0;
 
@@ -1198,7 +1198,7 @@ int *sendcnts,*displs,recvcnt;
 char *sptr,*rptr;
 
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char error_message[1024];
 
 	sendcnts=0;
@@ -1283,7 +1283,7 @@ PyArrayObject *array,*result;
 int sendcnt,*displs,*recvcnts,rtot,i;
 char *sptr,*rptr;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char error_message[1024];
 
 	displs=0;
@@ -1378,7 +1378,7 @@ PyArrayObject *array,*result;
 int sendcnt,recvcnt,rtot;
 char *sptr,*rptr;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 
 	array=NULL;
 	sptr=NULL;
@@ -1436,7 +1436,7 @@ PyObject *sendbuf_obj;
 PyArrayObject *array,*result;
 int sendcnts,recvcnt;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char *sptr,*rptr;
 
 	sendcnts=0;
@@ -1497,7 +1497,7 @@ int myid;
 PyArrayObject *result;
 PyArrayObject *array;
 PyObject *input;
-int dimensions[1];
+npy_intp dimensions[1];
 char *sptr,*rptr;
 
 	if (!PyArg_ParseTuple(args, "Oillil", &input, &count,&datatype,&op,&root,&comm))
@@ -1551,7 +1551,7 @@ PyObject *sendbuf_obj;
 PyArrayObject *array,*result;
 int sendcnts,recvcnt;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char *sptr,*rptr;
 sendcnts=0;
 
@@ -1600,7 +1600,7 @@ PyArrayObject *array,*result;
 int *sendcnts,*sdispls,*rdispls,*recvcnts,rtot,i;
 char *sptr,*rptr;
 int numprocs;
-int dimensions[1];
+npy_intp dimensions[1];
 #ifdef DEBUG
     int myid;
 #endif
