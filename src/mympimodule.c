@@ -28,23 +28,6 @@ THE SOFTWARE PROVIDED HEREIN IS ON AN AS IS BASIS, AND THE
 	OTHER RIGHTS.";
 */
 
-/************** numpy or Numeric? **************/
-
-/* if NUMPY is defined then we look for arrayobject.h
-   in <arrayobject.h>.  If not then in <Numeric/arrayobject.h>
-
-   The second case would be the norm if you are linking against
-   Numeric instead of numpy.
-
-   We default to Numeric but this might change in the future.
-
-   You can see the which was used at run time by printing
-   mpi.ARRAY_LIBRARY.
-
-*/
-/* !!! CHANGED - SET NUMPY !!! */
-#define NUMPY
-
 /************** numpy or Numeric **************/
 char DATE_SRC[]="$Date$";
 char URL_SRC[]="$HeadURL$";
@@ -55,8 +38,6 @@ char REV_SRC[]="$Revision$";
 #define DATA_TYPE long
 #define COM_TYPE long
 #define ARG_ARRAY
-/* #define ARG_STR */
-/* #define SIZE_RANK */
 
 #include <Python.h>
 #include "documentation.h"
@@ -65,13 +46,7 @@ char REV_SRC[]="$Revision$";
 #include "solvers.h"
 #endif
 
-#ifdef NUMPY
 #include <numpy/arrayobject.h>
-#define LIBRARY "NUMPY"
-#else
-#include <Numeric/arrayobject.h>
-#define LIBRARY "Numeric"
-#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -3016,7 +2991,7 @@ PyMODINIT_FUNC PyInit_mpi(void)
     tmp = VERT_FUNC((CAST)MPI_WTIME_IS_GLOBAL);
     PyDict_SetItemString(d,   "MPI_WTIME_IS_GLOBAL", tmp);  Py_DECREF(tmp);
 
-    tmp = PyUnicode_FromString(LIBRARY);
+    tmp = PyUnicode_FromString("NUMPY");
     PyDict_SetItemString(d,   "ARRAY_LIBRARY", tmp);  Py_DECREF(tmp);
 
     tmp = PyUnicode_FromString(DATE_DOC);
