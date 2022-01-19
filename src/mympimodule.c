@@ -175,25 +175,7 @@ static PyObject *mpiError;
 
 void eh( MPI_Comm *comm, int *err, ... )
 {
-/*
-char string[256];
-int len;
-
- if (*err != MPI_ERR_OTHER) {
- errs++;
- printf( "Unexpected error code\n" );fflush(stdout);
- }
- if (*comm != mycomm) {
- errs++;
- printf( "Unexpected communicator\n" );fflush(stdout);
- }
- calls++;
- */
  ierr=*err;
- /*
- MPI_Error_string(ierr, string,  &len);
- printf( "mpi generated the error %d %s\n",*err,string );fflush(stdout);
- */
  printf( "mpi generated the error %d\n",*err );fflush(stdout);
  return;
 }
@@ -344,8 +326,6 @@ int choice;
 }
 
 
-
-
 static PyObject *mpi_comm_create(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_create ( MPI_Comm comm, MPI_Group group, MPI_Comm *comm_out ) */
@@ -408,14 +388,6 @@ Py_ssize_t ln=0;
 	}
 	if (array == NULL)
 		return NULL;
-/*
-	n=1;
-	for(i=0;i<array->nd;i++)
-		n = n* array->dimensions[i];
-	if(array->nd == 0)n=1;
-	if (n < count)
-		return NULL;
-*/
 }
 
 
