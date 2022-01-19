@@ -242,32 +242,6 @@ int getptype(long mpitype) {
 	return(NPY_INT);
 }
 
-static PyObject *mpi_test(PyObject *self, PyObject *args)
-{
-/* int MPI_Test (MPI_Request  *request,int *flag, MPI_Status *status) */
-	printf("this routine does not work yet\n");
-    return NULL;
-}
-
-static PyObject *mpi_wait(PyObject *self, PyObject *args)
-{
-/* int MPI_Wait (MPI_Request  *request, MPI_Status *status) */
-	printf("this routine does not work yet\n");
-    return NULL;
-}
-static PyObject *mpi_isend(PyObject *self, PyObject *args)
-{
-/* int MPI_Isend( void *buf, int count, MPI_Datatype datatype, int dest, int tag,MPI_Comm comm, MPI_Request *request ) */
-	printf("this routine does not work yet\n");
-    return NULL;
-}
-static PyObject *mpi_irecv(PyObject *self, PyObject *args)
-{
-/* int MPI_Irecv( void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request ) */
-	printf("this routine does not work yet\n");
-    return NULL;
-}
-
 static PyObject *mpi_group_rank(PyObject *self, PyObject *args)
 {
 /* int MPI_Group_rank ( MPI_Group group, int *rank ) */
@@ -2853,8 +2827,6 @@ static PyMethodDef mpiMethods[] = {
     {"mpi_group_rank",	mpi_group_rank,		METH_VARARGS,     	 mpi_group_rank__},
     {"mpi_init",		mpi_init,			METH_VARARGS,     	 mpi_init__},
     {"mpi_iprobe",		mpi_iprobe,			METH_VARARGS,     	 mpi_iprobe__},
-    {"mpi_irecv",		mpi_irecv,			METH_VARARGS,     	 mpi_irecv__},
-    {"mpi_isend",		mpi_isend,			METH_VARARGS,     	 mpi_isend__},
     {"mpi_probe",		mpi_probe,			METH_VARARGS,     	 mpi_probe__},
     {"mpi_recv",		mpi_recv,			METH_VARARGS,     	 mpi_recv__},
     {"mpi_reduce",		mpi_reduce,			METH_VARARGS,     	 mpi_reduce__},
@@ -2864,8 +2836,6 @@ static PyMethodDef mpiMethods[] = {
     {"mpi_start",		mpi_start,			METH_VARARGS,     	 mpi_start__},
     {"mpi_status",		mpi_status,			METH_VARARGS,     	 mpi_status__},
     {"mpi_get_processor_name",		mpi_get_processor_name,			METH_VARARGS,     	 mpi_get_processor_name__},
-    {"mpi_test",		mpi_test,			METH_VARARGS,     	 mpi_test__},
-    {"mpi_wait",		mpi_wait,			METH_VARARGS,     	 mpi_wait__},
     {"mpi_wtime",		mpi_wtime,			METH_VARARGS,     	 mpi_wtime__},
     {"mpi_wtick",		mpi_wtick,			METH_VARARGS,     	 mpi_wtick__},
     {"mpi_attr_get",	mpi_attr_get,		METH_VARARGS,     	 mpi_attr_get__},
