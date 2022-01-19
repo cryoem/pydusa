@@ -293,7 +293,6 @@ COM_TYPE  incomm,outcomm;
 	return VERT_FUNC((CAST)outcomm);
 }
 
-
 static PyObject *mpi_comm_set_errhandler(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_dup ( MPI_Comm comm, MPI_Comm *comm_out ) */
@@ -325,7 +324,6 @@ int choice;
 	return PyLong_FromLong((long)ierr);
 }
 
-
 static PyObject *mpi_comm_create(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_create ( MPI_Comm comm, MPI_Group group, MPI_Comm *comm_out ) */
@@ -345,7 +343,6 @@ long group;
 	return VERT_FUNC((CAST)outcomm);
 }
 
-
 static PyObject *mpi_barrier(PyObject *self, PyObject *args)
 {
 /* int MPI_Barrier ( MPI_Comm comm ) */
@@ -357,6 +354,7 @@ int ierr;
     ierr=MPI_Barrier((MPI_Comm)comm );
 	return PyLong_FromLong((long)ierr);
 }
+
 static PyObject *mpi_send(PyObject *self, PyObject *args)
 {
 /* int MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm ) */
@@ -389,7 +387,6 @@ Py_ssize_t ln=0;
 	if (array == NULL)
 		return NULL;
 }
-
 
 static PyObject *mpi_recv(PyObject *self, PyObject *args)
 {
@@ -435,7 +432,6 @@ static PyObject *mpi_error(PyObject *self, PyObject *args)
 {
 	return PyLong_FromLong((long)ierr);
 }
-
 
 static PyObject * mpi_wtime(PyObject *self, PyObject *args) {
 
@@ -495,7 +491,6 @@ static PyObject *mpi_array_of_errcodes(PyObject *self, PyObject *args)
                         NPY_INT,
                         (char *)dimensions));
     }
-
 }
 
 static PyObject *mpi_intercomm_merge(PyObject *self, PyObject *args)
@@ -516,6 +511,7 @@ int high;
 	ierr=MPI_Intercomm_merge ((MPI_Comm)incomm,high,(MPI_Comm*)&outcomm );
 	return VERT_FUNC((CAST)outcomm);
 }
+
 static PyObject *mpi_comm_free(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_free ( MPI_Comm *comm) */
@@ -527,7 +523,6 @@ static PyObject *mpi_comm_free(PyObject *self, PyObject *args)
 #define VERT_FUNC PyLong_FromLong
 #endif
 COM_TYPE  incomm;
-
 
 	if (!PyArg_ParseTuple(args, "l", &incomm))
         return NULL;
@@ -738,6 +733,7 @@ int root;
 	ierr=MPI_Comm_accept(port_name, info, root, (MPI_Comm)comm, (MPI_Comm*)&newcomm);
 	return VERT_FUNC((CAST)newcomm);
 }
+
 static PyObject *mpi_comm_connect(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_connect(char* port_name, MPI_info info,int root, MPI_Comm comm, MPI_Comm *newcomm)*/
@@ -760,6 +756,7 @@ int root;
 	ierr=MPI_Comm_connect(port_name, info, root, (MPI_Comm)comm, (MPI_Comm*)&newcomm);
 	return VERT_FUNC((CAST)newcomm);
 }
+
 static PyObject *mpi_comm_disconnect(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_disconnect(MPI_Comm *comm)*/
@@ -822,7 +819,6 @@ int count;
 	return PyLong_FromLong((long)count);
 }
 
-
 static PyObject *mpi_comm_size(PyObject *self, PyObject *args)
 {
 /* int MPI_Probe( int source, int tag, MPI_Comm comm, MPI_Status *status ) */
@@ -846,7 +842,6 @@ int rank;
 	ierr=MPI_Comm_rank((MPI_Comm)comm,&rank);
 	return PyLong_FromLong((long)rank);
 }
-
 
 static PyObject *mpi_iprobe(PyObject *self, PyObject *args)
 {
@@ -1104,7 +1099,6 @@ Py_ssize_t ln=0;
 #endif
   	return PyArray_Return(result);
 }
-
 
 static PyObject * mpi_scatterv(PyObject *self, PyObject *args) {
 /* int MPI_Scatterv(void *sendbuf, int *sendcnts, int *displs, MPI_Datatype sendtype,
@@ -1454,12 +1448,12 @@ char *sptr,*rptr;
   	return PyArray_Return(result);
 }
 
-
 static PyObject * mpi_finalize(PyObject *self, PyObject *args) {
 /* int MPI_Finalize() */
 	if(erroron){ erroron=0; return NULL;}
     return PyLong_FromLong((long)MPI_Finalize());
 }
+
 static PyObject * mpi_alltoall(PyObject *self, PyObject *args) {
 /*
    int MPI_Alltoall( void *sendbuf, int sendcount, MPI_Datatype sendtype,
@@ -1508,6 +1502,7 @@ sendcnts=0;
 #endif
   	return PyArray_Return(result);
 }
+
 static PyObject * mpi_alltoallv(PyObject *self, PyObject *args) {
 /*
   int MPI_Alltoallv ( void *sendbuf, int *sendcnts, int *sdispls, MPI_Datatype sendtype,
@@ -1604,22 +1599,6 @@ char error_message[1024];
 		sptr=(char*)array->data;
 
    /* printf("   do the call %d \n"); */
-   /*
-        MPI_Comm_rank((MPI_Comm)comm,&myid);
-   		printf("myid =%d ",myid);
-   		for(i=0;i<numprocs;i++)
-   			printf("%d ",sendcnts[i]);
-   		printf(" | ");
-   		for(i=0;i<numprocs;i++)
-   			printf("%d ",sdispls[i]);
-   		printf(" | ");
-   		for(i=0;i<numprocs;i++)
-   			printf("%d ",recvcnts[i]);
-   		printf(" | ");
-   		for(i=0;i<numprocs;i++)
-   			printf("%d ",rdispls[i]);
-   		printf("\n");
-   */
        ierr=MPI_Alltoallv(sptr, sendcnts, sdispls, (MPI_Datatype)sendtype,
                           rptr, recvcnts, rdispls, (MPI_Datatype)recvtype,
                           (MPI_Comm)comm);
@@ -1639,8 +1618,6 @@ char error_message[1024];
 
   	return PyArray_Return(result);
 }
-
-
 
 static PyObject * mpi_win_allocate_shared(PyObject *self, PyObject *args) {
 
@@ -1740,9 +1717,6 @@ static PyObject * mpi_win_free(PyObject *self, PyObject *args) {
 }
 
 
-
-
-
 #define PI  3.141592653589793238462643383279502884197
 #define EPS 1.0e-16
 #define FPMIN 1.0e-30
@@ -1772,7 +1746,6 @@ double bessi0(double x)
 	return ans;
 }
 
-
 DOUBLE chebev(DOUBLE a, DOUBLE b, DOUBLE c[], int m, DOUBLE x)
 {
     DOUBLE d = 0.0, dd = 0.0, sv, y, y2;
@@ -1789,7 +1762,6 @@ DOUBLE chebev(DOUBLE a, DOUBLE b, DOUBLE c[], int m, DOUBLE x)
     }
     return y*d - dd + 0.5*c[0];
 }
-
 
 void beschb(DOUBLE x, DOUBLE *gam1, DOUBLE *gam2, DOUBLE *gampl, DOUBLE *gammi)
 {
@@ -1815,9 +1787,6 @@ void beschb(DOUBLE x, DOUBLE *gam1, DOUBLE *gam2, DOUBLE *gampl, DOUBLE *gammi)
 }
 #undef NUSE1
 #undef NUSE2
-
-
-
 
 void bessjy(DOUBLE x, DOUBLE xnu, DOUBLE *rj, DOUBLE *ry, DOUBLE *rjp, DOUBLE *ryp)
 {
@@ -1989,13 +1958,13 @@ double bessi1_5(double x)
 {
     return (x == 0) ? 0 : sqrt(2/(PI*x))*(cosh(x)-sinh(x)/x);
 }
+
 double bessj1_5(double x)
 {
     double rj, ry, rjp, ryp;
     bessjy(x, 1.5, &rj, &ry, &rjp, &ryp);
     return rj;
 }
-
 
 #define ABS(x) (((x) >= 0) ? (x) : (-(x)))
 DOUBLE kfv(DOUBLE w, DOUBLE a, DOUBLE alpha)
@@ -2592,7 +2561,6 @@ ierr = MPI_Barrier(comm);
 #undef MAX
 
 
-
 static PyObject *mpi_comm_split_type(PyObject *self, PyObject *args)
 {
 /* int MPI_Comm_split ( MPI_Comm comm, int color, int key, MPI_Comm *comm_out ) */
@@ -2617,8 +2585,6 @@ static PyObject *mpi_comm_split_type(PyObject *self, PyObject *args)
 	return VERT_FUNC((CAST)outcomm);
 }
 
-
-
 #include <string.h>
 #define STRINGIZE(x) #x
 #define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
@@ -2631,7 +2597,6 @@ static PyObject * pydusa_version(PyObject *self, PyObject *args) {
 	sprintf(cw, "\n%s\nCompile time: %s  %s\n",STRINGIZE_VALUE_OF(PYDUSA_VERSION), __DATE__, __TIME__);
 	return PyUnicode_FromString(cw);
 }
-
 
 static PyObject * copywrite(PyObject *self, PyObject *args) {
 int i;
@@ -2913,16 +2878,13 @@ PyMODINIT_FUNC PyInit_mpi(void)
 #endif
 
 
-
 return m;
-
-
 }
+
 void myerror(char *s) {
 	erroron=1;
 	PyErr_SetString(mpiError,s);
 }
-
 
 #ifdef DOSLU
 #include "./solvers.c"
