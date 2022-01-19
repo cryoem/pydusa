@@ -1656,30 +1656,7 @@ static PyObject * mpi_win_allocate_shared(PyObject *self, PyObject *args) {
 #define CAST long
 #define VERT_FUNC PyLong_FromLong
 #endif
-/*
-	MPI_Init(&argc, &argv);
 
-	int rank_all;
-	int rank_sm;
-	int size_sm;
-
-	// all communicator
-	MPI_Comm comm_sm;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank_all);
-
-	// shared memory communicator
-	MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &comm_sm);
-	MPI_Comm_rank(comm_sm, &rank_sm);
-	MPI_Comm_size(comm_sm, &size_sm);
-
-	std::size_t local_window_count(1000000000);
-
-	char* base_ptr;
-	MPI_Win win_sm;
-	int disp_unit(sizeof(char));
-	MPI_Win_allocate_shared(local_window_count * disp_unit, disp_unit, MPI_INFO_NULL, comm_sm, &base_ptr, &win_sm);
-
-*/
 	//NUMPY 1.13 change PyArrayObject *result;
 	PyObject *result;
 	MPI_Aint size;
@@ -2035,21 +2012,6 @@ DOUBLE kfv(DOUBLE w, DOUBLE a, DOUBLE alpha)
 #undef ABS
 #undef PI
 #undef DOUBLE
-
-//MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, hostcomm,ierr)
-
-// void mrk_identify_fptr(void *fptr, char *fstr) {
-// 	char debug_message[1024];
-// 	Dl_info finfo;
-// 	int return_code;
-// 	return_code = dladdr(fptr, &finfo);
-// 	if (!return_code) {
-// 		sprintf(debug_message, "MRK_DEBUG: Problem retrieving program information for %x (%s):  %s \n", fptr, fstr, dlerror());
-// 	} else {
-// 		sprintf(debug_message, "MRK_DEBUG: Address %x (%s) located in %s within %s. \n", fptr, fstr, finfo.dli_fname, finfo.dli_sname);
-// 	}
-// 	perror(debug_message);
-// }
 
 // Function to replace a string with another
 // string
@@ -2555,18 +2517,6 @@ ierr = MPI_Barrier(comm);
 							int lad = 2*i + nx_extended*(j + k*nyt);
 							tvol[lad]   *= nwe[i + nxt*(j + kt*nyt)];
 							tvol[lad+1] *= nwe[i + nxt*(j + kt*nyt)];
-							/*  In DP unnecessary
-							double prr = tvol[lad]   * nwe[i + nxt*(j + kt*nyt)];
-							double pim = tvol[lad+1] * nwe[i + nxt*(j + kt*nyt)];
-							if(prr < 1.0e23 &&  pim < 1.0e23) {
-								tvol[lad]   = (float)prr;
-								tvol[lad+1] = (float)pim;
-							} else {
-								double fits = 1.0e23/MAX(prr,pim);
-								tvol[lad]   = (float)(prr*fits);
-								tvol[lad+1] = (float)(pim*fits);
-							}
-							*/
 						}
 					}
 				}
@@ -2597,18 +2547,6 @@ ierr = MPI_Barrier(comm);
 								int lad = 2*i + nx_extended*(j + k*nyt);
 								tvol[lad]   *= nwe[i + nxt*(j + kt*nyt)];
 								tvol[lad+1] *= nwe[i + nxt*(j + kt*nyt)];
-								/*  Not needed in DP
-								double prr = tvol[lad]  *  nwe[i + nxt*(j + kt*nyt)];
-								double pim = tvol[lad+1] * nwe[i + nxt*(j + kt*nyt)];
-								if(prr < 1.0e23 &&  pim < 1.0e23) {
-									tvol[lad]   = (float)prr;
-									tvol[lad+1] = (float)pim;
-								} else {
-									double fits = 1.0e23/MAX(prr,pim);
-									tvol[lad]   = (float)(prr*fits);
-									tvol[lad+1] = (float)(pim*fits);
-								}
-								*/
 							}
 						}
 					}
@@ -2634,16 +2572,6 @@ ierr = MPI_Barrier(comm);
 		free(nwe);  // Something is always allocated, even on unused CPUs
 	}
 ierr = MPI_Barrier(comm);
-/*
-if( myid == 0 ) {
-	printf( "\n  vol    %f    %f    %f     %f",tvol[0],tvol[1],tvol[2],tvol[3]);
-	printf( "\n  twe    %f    %f    %f     %f\n",tweight[0],tweight[1],tweight[2],tweight[3]);
-	double qt = 0.0;
-	for (i=0;i<2*size;++i) qt += tvol[i];
-	printf( "\n  SECOND  tvol sum     %e",qt);
-}
-ierr = MPI_Barrier(comm);
-*/
 //#endif
 	//printf( "\n DONE  %d \n",myid);
 ierr = MPI_Barrier(comm);
