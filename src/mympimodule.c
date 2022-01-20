@@ -302,7 +302,7 @@ char error_message[1024];
 	if (!PyArg_ParseTuple(args, "liO", &in_group,&n,&ranks_obj))
         return NULL;
     group=(MPI_Group)in_group;
-	array = (PyArrayObject *) PyArray_ContiguousFromObject(ranks_obj, PyArray_INT, 1, 1);
+	array = (PyArrayObject *) PyArray_ContiguousFromObject(ranks_obj, NPY_INT, 1, 1);
 	if (array == NULL)
 		return NULL;
 	if(array->dimensions[0] < n)
@@ -502,7 +502,7 @@ PyArrayObject *result;
 npy_intp dimensions[1],statray[3];
 
     dimensions[0]=3;
-    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, NPY_INT);
 	statray[0]=status.MPI_SOURCE;
 	statray[1]=status.MPI_TAG;
 	statray[2]=status.MPI_ERROR;
@@ -564,14 +564,14 @@ static PyObject *mpi_array_of_errcodes(PyObject *self, PyObject *args)
 	dimensions[0]=array_of_errcodes_size;
 	return(PyArray_FromDimsAndData(1,
                         dimensions,
-                        PyArray_INT,
+                        NPY_INT,
                         (char *)array_of_errcodes));
 	}
 	else {
 	dimensions[0]=0;
 	return(PyArray_FromDimsAndData(1,
                         dimensions,
-                        PyArray_INT,
+                        NPY_INT,
                         (char *)dimensions));
     }
 
@@ -1051,7 +1051,7 @@ for(i=0;i<argc;i++) {
     ierr=MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
     ierr=MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 	dimensions[0]=2;
-	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, NPY_INT);
 	if (result == NULL)
 		return NULL;
 	data[0]=myid;
@@ -1121,7 +1121,7 @@ static PyObject * mpi_start(PyObject *self, PyObject *args) {
 
 
 	dimensions[0]=2;
-	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, NPY_INT);
 	if (result == NULL)
 		return NULL;
 	data[0]=myid;
@@ -1219,7 +1219,7 @@ char error_message[1024];
 #else
     if(myid == root) {
 #endif
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		sendcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1229,7 +1229,7 @@ char error_message[1024];
 		}
 		memcpy((void *)sendcnts, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		displs=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1305,7 +1305,7 @@ char error_message[1024];
     if(myid == root) {
 #endif
     /* printf("  get the recv_counts array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		recvcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1319,7 +1319,7 @@ char error_message[1024];
 			rtot=rtot+recvcnts[i];
 		Py_DECREF(array);
     /* printf("  get the offset array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		displs=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1619,7 +1619,7 @@ char error_message[1024];
     recvcnts=0;
 
     /* printf("  get the recvcnts array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		recvcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1634,7 +1634,7 @@ char error_message[1024];
 		Py_DECREF(array);
 
     /* printf("  get the recv offset array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(rdispls_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(rdispls_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		rdispls=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1653,7 +1653,7 @@ char error_message[1024];
 
 
     /* printf("  get the sendcnts array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		sendcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1665,7 +1665,7 @@ char error_message[1024];
 		Py_DECREF(array);
 
     /* printf("  get the send offset array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(sdispls_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(sdispls_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		sdispls=(int*)malloc((size_t) (sizeof(int)*numprocs));
