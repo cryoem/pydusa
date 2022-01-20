@@ -234,12 +234,12 @@ int c_len;
 }
 
 int getptype(long mpitype) {
-	if(mpitype == (long)MPI_INT)    return(PyArray_INT);
-	if(mpitype == (long)MPI_FLOAT)  return(PyArray_FLOAT);
-	if(mpitype == (long)MPI_DOUBLE) return(PyArray_DOUBLE);
-	if(mpitype == (long)MPI_CHAR)   return(PyArray_CHAR);  /* Added in version for sparx */
+	if(mpitype == (long)MPI_INT)    return(NPY_INT);
+	if(mpitype == (long)MPI_FLOAT)  return(NPY_FLOAT);
+	if(mpitype == (long)MPI_DOUBLE) return(NPY_DOUBLE);
+	if(mpitype == (long)MPI_CHAR)   return(NPY_CHAR);  /* Added in version for sparx */
 	printf("could not find type input: %ld  available: MPI_FLOAT %ld MPI_INT %ld MPI_DOUBLE %ld MPI_CHAR %ld\n",mpitype,(long)MPI_FLOAT,(long)MPI_INT,(long)MPI_DOUBLE,(long)MPI_CHAR);
-	return(PyArray_INT);
+	return(NPY_INT);
 }
 
 static PyObject *mpi_test(PyObject *self, PyObject *args)
