@@ -483,7 +483,7 @@ char *aptr;
 	if (!PyArg_ParseTuple(args, "iliil", &count,&datatype,&source,&tag,&comm))
         return NULL;
     dimensions[0]=count;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
 	ierr=MPI_Recv( aptr,  count, (MPI_Datatype)datatype,source,tag, (MPI_Comm)comm, &status );
 #ifdef DEBUG
@@ -502,7 +502,7 @@ PyArrayObject *result;
 int dimensions[1],statray[3];
 
     dimensions[0]=3;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
 	statray[0]=status.MPI_SOURCE;
 	statray[1]=status.MPI_TAG;
 	statray[2]=status.MPI_ERROR;
@@ -1051,7 +1051,7 @@ for(i=0;i<argc;i++) {
     ierr=MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
     ierr=MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 	dimensions[0]=2;
-	result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
 	if (result == NULL)
 		return NULL;
 	data[0]=myid;
@@ -1121,7 +1121,7 @@ static PyObject * mpi_start(PyObject *self, PyObject *args) {
 
 
 	dimensions[0]=2;
-	result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, PyArray_INT);
 	if (result == NULL)
 		return NULL;
 	data[0]=myid;
@@ -1152,7 +1152,7 @@ Py_ssize_t ln=0;
 
 
 	dimensions[0]=count;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 #ifdef MPI2
@@ -1246,7 +1246,7 @@ char error_message[1024];
 	}
 
     dimensions[0]=recvcnt;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
     rptr=(char*)(result->data);
 
 	ierr=MPI_Scatterv(sptr, sendcnts, displs, (MPI_Datatype)sendtype,rptr,recvcnt,(MPI_Datatype)recvtype, root, (MPI_Comm )comm );
@@ -1332,7 +1332,7 @@ char error_message[1024];
 	}
 	/* printf("  allocate the recvbuf \n"); */
 		dimensions[0]=rtot;
-		result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+		result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
 		rptr=(char*)(result->data);
    /* printf("  get sendbuf\n"); */
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendbuf_obj, getptype(sendtype), 1, 3);
@@ -1404,7 +1404,7 @@ int dimensions[1];
     }
 	/* printf("  allocate the recvbuf \n"); */
 	dimensions[0]=rtot;
-	result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
 	rptr=(char*)(result->data);
 
 
@@ -1465,7 +1465,7 @@ char *sptr,*rptr;
 
     /* allocate the recvbuf */
     dimensions[0]=recvcnt;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
     rptr=(char*)(result->data);
 
    /*  do the call */
@@ -1514,7 +1514,7 @@ char *sptr,*rptr;
 	else {
 		dimensions[0]=0;
 	}
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	rptr=(char*)(result->data);
 
 	array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
@@ -1573,7 +1573,7 @@ sendcnts=0;
 
     /* allocate the recvbuf */
     dimensions[0]=recvcnt*numprocs;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
     rptr=(char*)(result->data);
 
    /*  do the call */
@@ -1647,7 +1647,7 @@ char error_message[1024];
 
 	/* printf("  allocate the recvbuf \n"); */
 		dimensions[0]=rtot;
-		result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+		result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
 		rptr=(char*)(result->data);
 
 
