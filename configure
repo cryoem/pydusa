@@ -2197,7 +2197,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=MYMPI
- VERSION=3.0
+ VERSION=3.1
 
 
 cat >>confdefs.h <<_ACEOF
@@ -5313,30 +5313,6 @@ else
 fi
 
 
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex00.py.in > mpi_tests/p_ex00.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex01.py.in > mpi_tests/p_ex01.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex02.py.in > mpi_tests/p_ex02.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex04.py.in > mpi_tests/p_ex04.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex05.py.in > mpi_tests/p_ex05.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex05d.py.in > mpi_tests/p_ex05d.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex06.py.in > mpi_tests/p_ex06.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex07.py.in > mpi_tests/p_ex07.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex08.py.in > mpi_tests/p_ex08.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex09.py.in > mpi_tests/p_ex09.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex10.py.in > mpi_tests/p_ex10.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex12.py.in > mpi_tests/p_ex12.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/p_ex13.py.in > mpi_tests/p_ex13.py
-
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/main0.py.in > mpi_tests/mpi2Examples/main0.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/main1.py.in > mpi_tests/mpi2Examples/main1.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/tspawn.py.in > mpi_tests/mpi2Examples/tspawn.py
-sed -e 's%@python@%'${py_path}'%' mpi_tests/mpi2Examples/worker.py.in > mpi_tests/mpi2Examples/worker.py
-
-sed -e 's%@python@%'${py_path}'%' workit/workit.py.in > workit/workit.py
-
-chmod +x mpi_tests/*.py
-chmod +x mpi_tests/mpi2Examples/*.py
-chmod +x workit/*.py
 
 
 
@@ -5350,7 +5326,7 @@ chmod +x workit/*.py
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile lib/Makefile mpi_tests/Makefile workit/Makefile check/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile lib/Makefile workit/Makefile check/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5954,7 +5930,6 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
-    "mpi_tests/Makefile") CONFIG_FILES="$CONFIG_FILES mpi_tests/Makefile" ;;
     "workit/Makefile") CONFIG_FILES="$CONFIG_FILES workit/Makefile" ;;
     "check/Makefile") CONFIG_FILES="$CONFIG_FILES check/Makefile" ;;
 

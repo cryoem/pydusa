@@ -49,7 +49,7 @@ THE SOFTWARE PROVIDED HEREIN IS ON AN AS IS BASIS, AND THE
 char DATE_SRC[]="$Date$";
 char URL_SRC[]="$HeadURL$";
 char REV_SRC[]="$Revision$";
-#define VERSION "3.0.0"
+#define VERSION "3.1.0"
 #define COPYWRITE "Copyright (c) 2005 The Regents of the University of California All Rights Reserved.  print mpi.copywrite() for details."
 #undef DO_UNSIGED
 #define DATA_TYPE long
@@ -234,12 +234,12 @@ int c_len;
 }
 
 int getptype(long mpitype) {
-	if(mpitype == (long)MPI_INT)    return(PyArray_INT);
-	if(mpitype == (long)MPI_FLOAT)  return(PyArray_FLOAT);
-	if(mpitype == (long)MPI_DOUBLE) return(PyArray_DOUBLE);
-	if(mpitype == (long)MPI_CHAR)   return(PyArray_CHAR);  /* Added in version for sparx */
+	if(mpitype == (long)MPI_INT)    return(NPY_INT);
+	if(mpitype == (long)MPI_FLOAT)  return(NPY_FLOAT);
+	if(mpitype == (long)MPI_DOUBLE) return(NPY_DOUBLE);
+	if(mpitype == (long)MPI_CHAR)   return(NPY_CHAR);  /* Added in version for sparx */
 	printf("could not find type input: %ld  available: MPI_FLOAT %ld MPI_INT %ld MPI_DOUBLE %ld MPI_CHAR %ld\n",mpitype,(long)MPI_FLOAT,(long)MPI_INT,(long)MPI_DOUBLE,(long)MPI_CHAR);
-	return(PyArray_INT);
+	return(NPY_INT);
 }
 
 static PyObject *mpi_test(PyObject *self, PyObject *args)
@@ -302,7 +302,7 @@ char error_message[1024];
 	if (!PyArg_ParseTuple(args, "liO", &in_group,&n,&ranks_obj))
         return NULL;
     group=(MPI_Group)in_group;
-	array = (PyArrayObject *) PyArray_ContiguousFromObject(ranks_obj, PyArray_INT, 1, 1);
+	array = (PyArrayObject *) PyArray_ContiguousFromObject(ranks_obj, NPY_INT, 1, 1);
 	if (array == NULL)
 		return NULL;
 	if(array->dimensions[0] < n)
@@ -477,13 +477,13 @@ int count,source,tag;
 DATA_TYPE datatype;
 COM_TYPE comm;
 PyArrayObject *result;
-int dimensions[1];
+npy_intp dimensions[1];
 char *aptr;
 
 	if (!PyArg_ParseTuple(args, "iliil", &count,&datatype,&source,&tag,&comm))
         return NULL;
     dimensions[0]=count;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
 	ierr=MPI_Recv( aptr,  count, (MPI_Datatype)datatype,source,tag, (MPI_Comm)comm, &status );
 #ifdef DEBUG
@@ -499,10 +499,10 @@ static PyObject *mpi_status(PyObject *self, PyObject *args)
 {
 /* int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status ) */
 PyArrayObject *result;
-int dimensions[1],statray[3];
+npy_intp dimensions[1],statray[3];
 
     dimensions[0]=3;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, NPY_INT);
 	statray[0]=status.MPI_SOURCE;
 	statray[1]=status.MPI_TAG;
 	statray[2]=status.MPI_ERROR;
@@ -547,7 +547,7 @@ Output Parameters
 /*        printf("mpi_attr_get:  keyval:%d\n",keyval); */
 
         /* get the keyval for the specified attribute */
-        ierr = MPI_Attr_get((MPI_Comm)comm, keyval, &attr_value,&flag);
+        ierr = MPI_Comm_get_attr((MPI_Comm)comm, keyval, &attr_value,&flag);
         if ( !flag ) {
                 return NULL;
         }
@@ -564,14 +564,14 @@ static PyObject *mpi_array_of_errcodes(PyObject *self, PyObject *args)
 	dimensions[0]=array_of_errcodes_size;
 	return(PyArray_FromDimsAndData(1,
                         dimensions,
-                        PyArray_INT,
+                        NPY_INT,
                         (char *)array_of_errcodes));
 	}
 	else {
 	dimensions[0]=0;
 	return(PyArray_FromDimsAndData(1,
                         dimensions,
-                        PyArray_INT,
+                        NPY_INT,
                         (char *)dimensions));
     }
 
@@ -951,7 +951,7 @@ static PyObject * mpi_init(PyObject *self, PyObject *args) {
 #endif
 #ifdef SIZE_RANK
 	PyArrayObject *result;
-	int dimensions[1],data[2];
+	npy_intp dimensions[1],data[2];
 	char *aptr;
 #endif
 #ifdef ARG_ARRAY
@@ -1051,7 +1051,7 @@ for(i=0;i<argc;i++) {
     ierr=MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
     ierr=MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 	dimensions[0]=2;
-	result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, NPY_INT);
 	if (result == NULL)
 		return NULL;
 	data[0]=myid;
@@ -1067,7 +1067,7 @@ for(i=0;i<argc;i++) {
 static PyObject * mpi_start(PyObject *self, PyObject *args) {
 	PyArrayObject *result;
 	int argc,did_it,i;
-	int dimensions[1],data[2];
+	npy_intp dimensions[1],data[2];
 	int numprocs,myid;
 	char *command,*aptr;
 	char **argv;
@@ -1121,7 +1121,7 @@ static PyObject * mpi_start(PyObject *self, PyObject *args) {
 
 
 	dimensions[0]=2;
-	result = (PyArrayObject *)PyArray_FromDims(1, dimensions, PyArray_INT);
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, NPY_INT);
 	if (result == NULL)
 		return NULL;
 	data[0]=myid;
@@ -1143,7 +1143,7 @@ int mysize;
 PyArrayObject *result;
 PyArrayObject *array;
 PyObject *input;
-int dimensions[1];
+npy_intp dimensions[1];
 char *aptr;
 Py_ssize_t ln=0;
 
@@ -1152,7 +1152,7 @@ Py_ssize_t ln=0;
 
 
 	dimensions[0]=count;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	aptr=(char*)(result->data);
     ierr=MPI_Comm_rank((MPI_Comm)comm,&myid);
 #ifdef MPI2
@@ -1198,7 +1198,7 @@ int *sendcnts,*displs,recvcnt;
 char *sptr,*rptr;
 
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char error_message[1024];
 
 	sendcnts=0;
@@ -1219,7 +1219,7 @@ char error_message[1024];
 #else
     if(myid == root) {
 #endif
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		sendcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1229,7 +1229,7 @@ char error_message[1024];
 		}
 		memcpy((void *)sendcnts, (void*)array->data, (size_t) (sizeof(int)*numprocs));
 		Py_DECREF(array);
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		displs=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1246,7 +1246,7 @@ char error_message[1024];
 	}
 
     dimensions[0]=recvcnt;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
     rptr=(char*)(result->data);
 
 	ierr=MPI_Scatterv(sptr, sendcnts, displs, (MPI_Datatype)sendtype,rptr,recvcnt,(MPI_Datatype)recvtype, root, (MPI_Comm )comm );
@@ -1283,7 +1283,7 @@ PyArrayObject *array,*result;
 int sendcnt,*displs,*recvcnts,rtot,i;
 char *sptr,*rptr;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char error_message[1024];
 
 	displs=0;
@@ -1305,7 +1305,7 @@ char error_message[1024];
     if(myid == root) {
 #endif
     /* printf("  get the recv_counts array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		recvcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1319,7 +1319,7 @@ char error_message[1024];
 			rtot=rtot+recvcnts[i];
 		Py_DECREF(array);
     /* printf("  get the offset array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(displs_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		displs=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1332,7 +1332,7 @@ char error_message[1024];
 	}
 	/* printf("  allocate the recvbuf \n"); */
 		dimensions[0]=rtot;
-		result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+		result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
 		rptr=(char*)(result->data);
    /* printf("  get sendbuf\n"); */
 		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendbuf_obj, getptype(sendtype), 1, 3);
@@ -1378,7 +1378,7 @@ PyArrayObject *array,*result;
 int sendcnt,recvcnt,rtot;
 char *sptr,*rptr;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 
 	array=NULL;
 	sptr=NULL;
@@ -1404,7 +1404,7 @@ int dimensions[1];
     }
 	/* printf("  allocate the recvbuf \n"); */
 	dimensions[0]=rtot;
-	result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+	result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
 	rptr=(char*)(result->data);
 
 
@@ -1436,7 +1436,7 @@ PyObject *sendbuf_obj;
 PyArrayObject *array,*result;
 int sendcnts,recvcnt;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char *sptr,*rptr;
 
 	sendcnts=0;
@@ -1465,7 +1465,7 @@ char *sptr,*rptr;
 
     /* allocate the recvbuf */
     dimensions[0]=recvcnt;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
     rptr=(char*)(result->data);
 
    /*  do the call */
@@ -1497,7 +1497,7 @@ int myid;
 PyArrayObject *result;
 PyArrayObject *array;
 PyObject *input;
-int dimensions[1];
+npy_intp dimensions[1];
 char *sptr,*rptr;
 
 	if (!PyArg_ParseTuple(args, "Oillil", &input, &count,&datatype,&op,&root,&comm))
@@ -1514,7 +1514,7 @@ char *sptr,*rptr;
 	else {
 		dimensions[0]=0;
 	}
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(datatype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(datatype));
 	rptr=(char*)(result->data);
 
 	array = (PyArrayObject *) PyArray_ContiguousFromObject(input, getptype(datatype), 0, 3);
@@ -1551,7 +1551,7 @@ PyObject *sendbuf_obj;
 PyArrayObject *array,*result;
 int sendcnts,recvcnt;
 int numprocs,myid;
-int dimensions[1];
+npy_intp dimensions[1];
 char *sptr,*rptr;
 sendcnts=0;
 
@@ -1573,7 +1573,7 @@ sendcnts=0;
 
     /* allocate the recvbuf */
     dimensions[0]=recvcnt*numprocs;
-    result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+    result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
     rptr=(char*)(result->data);
 
    /*  do the call */
@@ -1600,7 +1600,7 @@ PyArrayObject *array,*result;
 int *sendcnts,*sdispls,*rdispls,*recvcnts,rtot,i;
 char *sptr,*rptr;
 int numprocs;
-int dimensions[1];
+npy_intp dimensions[1];
 #ifdef DEBUG
     int myid;
 #endif
@@ -1619,7 +1619,7 @@ char error_message[1024];
     recvcnts=0;
 
     /* printf("  get the recvcnts array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(recvcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		recvcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1634,7 +1634,7 @@ char error_message[1024];
 		Py_DECREF(array);
 
     /* printf("  get the recv offset array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(rdispls_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(rdispls_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		rdispls=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1647,13 +1647,13 @@ char error_message[1024];
 
 	/* printf("  allocate the recvbuf \n"); */
 		dimensions[0]=rtot;
-		result = (PyArrayObject *)PyArray_FromDims(1, dimensions, getptype(recvtype));
+		result = (PyArrayObject *)PyArray_SimpleNew(1, dimensions, getptype(recvtype));
 		rptr=(char*)(result->data);
 
 
 
     /* printf("  get the sendcnts array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(sendcnts_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		sendcnts=(int*)malloc((size_t) (sizeof(int)*numprocs));
@@ -1665,7 +1665,7 @@ char error_message[1024];
 		Py_DECREF(array);
 
     /* printf("  get the send offset array \n"); */
-		array = (PyArrayObject *) PyArray_ContiguousFromObject(sdispls_obj, PyArray_INT, 1, 1);
+		array = (PyArrayObject *) PyArray_ContiguousFromObject(sdispls_obj, NPY_INT, 1, 1);
 		if (array == NULL)
 			return NULL;
 		sdispls=(int*)malloc((size_t) (sizeof(int)*numprocs));

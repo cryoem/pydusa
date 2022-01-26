@@ -176,7 +176,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-SUBDIRS = src lib mpi_tests workit check .
+SUBDIRS = src lib workit check .
 all: all-recursive
 
 .SUFFIXES:

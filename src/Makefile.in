@@ -468,7 +468,7 @@ all: mympimodule.o mpi.so
 mympimodule.o: mympimodule.c
 	$(MPICC) $(CFLAGS) -c mympimodule.c -o mympimodule.o
 
-mpi.so: 
+mpi.so: mympimodule.o
 	$(MPICC) -shared mympimodule.o $(LDFLAGS) -o mpi.so
 
 #lib_LIBRARIES = libmpi.a
